@@ -5,7 +5,6 @@ import torch.optim as optim
 from collections import namedtuple
 from collections import OrderedDict
 import gymnasium as gym
-import atari_py
 import yaml
 import numpy as np
 
@@ -44,7 +43,7 @@ class DQNAgent(object):
         Reading algorithm specific parameters from a config file
         :return: dict
         """
-        with open('algorithms/DQN/dqn_config.yaml', 'r') as file:
+        with open('../algorithms/DQN/dqn_config.yaml', 'r') as file:
             dqn_config = yaml.safe_load(file)
         return dqn_config
 
