@@ -3,12 +3,13 @@ import numpy as np
 import os
 import sys
 import libsumo as traci
-
+import yaml
 
 
 class TrafficEnvironment(gym.Env):
-    def __init__(self, config):
-        
+    def __init__(self):
+
+        with open('env_config.yaml', 'r') as file: config = yaml.safe_load(file)
         number_of_intersections = "1_intersection.sumocfg"
         if config["RENDER_MODE"] == "human":
             self.render_mode = "sumo-gui"
@@ -20,10 +21,9 @@ class TrafficEnvironment(gym.Env):
 
     def sumo_start(self) -> None:
         """
-                This function is responsible to build connection between gui and python
-                :return: None
-                """
-
+            This function is responsible to build connection between gui and python
+            :return: None
+        """
         if 'SUMO_HOME' in os.environ:
             tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
             sys.path.append(tools)
@@ -38,12 +38,17 @@ class TrafficEnvironment(gym.Env):
                         "--no-warnings"]
         traci.start(self.sumoCmd)
         # traci.gui.setSchema("View #0", "real world")
-
     def step(self, action) -> None:
-        pass
+        traci.load(self.sumoCmd[1:])
     def reset(self) -> None:
         pass
     def render(self) -> None:
+        """
+        This function has no influence, sumo does it
+        """
+        pass
+    def get_density(self):
         pass
 
 
+sumo = TrafficEnvironment()
