@@ -11,6 +11,8 @@ from environment.sumo.network import Network
 class TrafficEnvironment(gym.Env):
     def __init__(self):
 
+        self.observation_space = gym.spaces.Box(low=0, high=1000, shape=(4,), dtype=np.float32)
+        self.action_space = gym.spaces.Discrete(2)
         self.config()
         self.render()
         number_of_intersections = "1_intersection.sumocfg"
@@ -40,12 +42,6 @@ class TrafficEnvironment(gym.Env):
         elif self.config["RENDER_MODE"] == None:
             self.render_mode = "sumo"
 
-class Observation:
-    def __init__(self):
-        ...
 
-class Action:
-    def __init__(self):
-        ...
 
 env = TrafficEnvironment()
