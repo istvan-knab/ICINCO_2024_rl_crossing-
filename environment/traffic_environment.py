@@ -2,7 +2,7 @@ import gymnasium as gym
 import numpy as np
 import os
 import sys
-import libsumo as traci
+import traci
 import yaml
 
 from environment.sumo.network import Network
@@ -18,16 +18,18 @@ class TrafficEnvironment(gym.Env):
         self.network = Network(self.config, self.path, self.render_mode)
 
 
+
     def config(self):
         with open('env_config.yaml', 'r') as file:
             self.config = yaml.safe_load(file)
 
 
     def step(self, action) -> None:
-        traci.load(self.sumoCmd[1:])
+        ...
 
     def reset(self) -> None:
-        pass
+        traci.load(self.network.sumoCmd[1:])
+        traci.gui.setSchema("View #0", "real world")
 
     def render(self) -> None:
         """

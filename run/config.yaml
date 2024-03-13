@@ -1,6 +1,6 @@
 # Agent
 algorithm : "DQN"
-EPISODES : 700
+EPISODES : 7
 
 # Environment
 environment : "CartPole-v1"
@@ -19,5 +19,5 @@ EPSILON_DECAY : 0.9975
 EPSILON_THRESHOLD: 0.1
 
 #Save
-PATH : "algorithms/neural_networks/models"
+PATH : "../algorithms/neural_networks/models"
 PATH_TEST : "algorithms/neural_networks/models/CartPole-v11709124021.985185.pth"

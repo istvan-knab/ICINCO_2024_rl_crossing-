@@ -88,8 +88,8 @@ class DQNAgent(object):
                 self.target.load_state_dict(OrderedDict(self.model.state_dict()))
                 self.target = self.model
 
-        self.io.save_model(self.model, self.config)
-
+        #self.io.save_model(self.model, self.config)
+        return self.model
 
 
     def fit_model(self) -> None:

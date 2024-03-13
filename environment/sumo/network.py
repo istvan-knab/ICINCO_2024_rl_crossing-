@@ -1,4 +1,4 @@
-import libsumo as traci
+import traci
 import os
 import sys
 class Network:

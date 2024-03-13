@@ -1,3 +1,5 @@
+import os
+
 import torch
 import time
 class IO(object):
@@ -7,7 +9,8 @@ class IO(object):
         pass
 
     def save_model(self, model, config):
-        PATH = config['PATH'] + '/' +str(config["environment"]) + str(time.time()) + ".pth"
+        PATH = (config['PATH'] + '/' + str(config["environment"]) + "_" + str(config["algorithm"]) +
+                "_" + str(time.time()) + ".pth")
         torch.save(model, PATH)
 
 
