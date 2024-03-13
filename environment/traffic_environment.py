@@ -5,39 +5,23 @@ import sys
 import libsumo as traci
 import yaml
 
+from environment.sumo.network import Network
+
 
 class TrafficEnvironment(gym.Env):
     def __init__(self):
 
-        with open('env_config.yaml', 'r') as file:
-            config = yaml.safe_load(file)
+        self.config()
+        self.render()
         number_of_intersections = "1_intersection.sumocfg"
-        if config["RENDER_MODE"] == "human":
-            self.render_mode = "sumo-gui"
-        elif config["RENDER_MODE"] == None:
-            self.render_mode = "sumo"
-
         self.path = os.path.dirname(os.path.abspath(__file__)) + "/sumo/intersection/" + number_of_intersections
-        self.sumo_start()
+        self.network = Network(self.config, self.path, self.render_mode)
 
-    def sumo_start(self) -> None:
-        """
-            This function is responsible to build connection between gui and python
-            :return: None
-        """
-        if 'SUMO_HOME' in os.environ:
-            tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
-            sys.path.append(tools)
 
-        else:
-            sys.exit("please declare environment variable 'SUMO_HOME'")
+    def config(self):
+        with open('env_config.yaml', 'r') as file:
+            self.config = yaml.safe_load(file)
 
-        self.path = self.path + ""
-        self.sumoCmd = [self.render_mode, "-c", self.path, "--start",
-                        "--quit-on-end", "--collision.action", "remove",
-                        "--no-warnings"]
-        traci.start(self.sumoCmd)
-        # traci.gui.setSchema("View #0", "real world")
 
     def step(self, action) -> None:
         traci.load(self.sumoCmd[1:])
@@ -49,10 +33,17 @@ class TrafficEnvironment(gym.Env):
         """
         This function has no influence, sumo does it
         """
-        pass
+        if self.config["RENDER_MODE"] == "human":
+            self.render_mode = "sumo-gui"
+        elif self.config["RENDER_MODE"] == None:
+            self.render_mode = "sumo"
 
-    def get_density(self):
-        pass
+class Observation:
+    def __init__(self):
+        ...
 
+class Action:
+    def __init__(self):
+        ...
 
-sumo = TrafficEnvironment()
+env = TrafficEnvironment()
