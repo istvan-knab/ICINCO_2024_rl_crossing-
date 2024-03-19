@@ -1,9 +1,9 @@
 # Agent
 algorithm : "DQN"
-EPISODES : 7
+EPISODES : 500
 
 # Environment
-environment : "CartPole-v1"
+environment : "TrafficEnv"
 RENDER_MODE : "human"
 
 # Run

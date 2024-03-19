@@ -13,6 +13,7 @@ from algorithms.DQN.replay_memory import ReplayMemory
 from algorithms.neural_networks.mlp import NN
 from algorithms.logger import Logger
 from algorithms.io import IO
+from environment.traffic_environment import TrafficEnvironment
 
 
 class DQNAgent(object):
@@ -21,7 +22,7 @@ class DQNAgent(object):
 
         self.config = config
         self.dqn_config = self.parameters()
-        self.env = gym.make(config["environment"], render_mode=config["RENDER_MODE"])
+        self.env = TrafficEnvironment()
         config["state_size"] = self.env.observation_space.shape[0]
         config["action_size"] = self.env.action_space.n
         self.device = config["DEVICE"]
@@ -63,25 +64,27 @@ class DQNAgent(object):
 
             while not done:
 
-                action = self.action_selection.epsilon_greedy_selection(self.model, state)
-                observation, reward, terminated, truncated, _ = self.env.step(action)
+                for signals in self.env.network.instance.traffic_light:
+                    state = self.env.get_state()
+                    state = torch.tensor(state, dtype=torch.float32, device=config["DEVICE"]).unsqueeze(0)
+                    action = self.action_selection.epsilon_greedy_selection(self.model, state)
+                    observation, reward, terminated, truncated, _ = self.env.step(action)
 
-                reward = torch.tensor([[reward]], device=self.device)
-                episode_reward += reward
-                done = torch.tensor([int(terminated or truncated)], device=self.device)
+                    reward = torch.tensor([[reward]], device=self.device)
+                    episode_reward += reward
+                    done = torch.tensor([int(terminated or truncated)], device=self.device)
 
 
-                next_state = torch.tensor(observation, dtype=torch.float32, device=self.device).unsqueeze(0)
-                action = torch.tensor([[action]], dtype=torch.long, device=self.device)
+                    next_state = torch.tensor(observation, dtype=torch.float32, device=self.device).unsqueeze(0)
+                    action = torch.tensor([[action]], dtype=torch.long, device=self.device)
 
-                self.memory.push(state, action, next_state, reward, done)
-                state = next_state
+                    self.memory.push(state, action, next_state, reward, done)
+
+                    if done:
+                        break
 
                 loss = self.fit_model()
                 episode_loss += loss
-
-                if done:
-                    break
 
             self.logger.step(episode, episode_reward, self.config, episode_loss)
             if episode % self.dqn_config["TAU"]:

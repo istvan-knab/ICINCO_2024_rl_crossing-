@@ -17,23 +17,48 @@ class TrafficEnvironment(gym.Env):
         self.render()
         self.path = os.path.dirname(os.path.abspath(__file__))
         self.network = Network(self.config, self.path, self.render_mode)
+        self.simulation_step = 0
 
     def action_handler(self, action):
-        pass
+        """
+        TLS incoming lanes states
+        """
+        observation = observation = np.array([0, 0, 0, 0])
+        return observation
+
+    def get_state(self):
+        observation = observation = np.array([0, 0, 0, 0])
+        return observation
     def get_reward(self):
-        pass
+        "The least waiting time on the whole network"
+        waiting_times = 0
+        lanes = self.network.instance.lanes
+        for lane in lanes:
+            waiting_times += traci.lane.getWaitingTime(lane)
+        return waiting_times
+
+    def is_terminal(self):
+        if self.simulation_step % self.config['max_step'] == 0:
+            terminated = True
+        else :
+            terminated = False
+
+        return terminated
 
     def config(self):
-        with open('env_config.yaml', 'r') as file:
+        with open('../environment/env_config.yaml', 'r') as file:
             self.config = yaml.safe_load(file)
 
 
     def step(self, action) -> None:
-        traci.simulationStep(10.0)
+
+        for seconds in range(self.config['STEPS']):
+            traci.simulationStep()
+            self.simulation_step += 1
         info = {}
         observation = self.action_handler(action)
         reward = self.get_reward()
-        terminated = False
+        terminated = self.is_terminal()
         truncated = False
 
         return observation, reward, terminated, truncated, info
@@ -42,6 +67,12 @@ class TrafficEnvironment(gym.Env):
     def reset(self) -> None:
         traci.load(self.network.sumoCmd[1:])
         traci.gui.setSchema("View #0", "real world")
+        observation = np.array([0, 0, 0, 0])
+        info = {}
+        self.simulation_step = 0
+
+
+        return observation, info
 
     def render(self) -> None:
         """
@@ -52,5 +83,4 @@ class TrafficEnvironment(gym.Env):
         elif self.config["RENDER_MODE"] == None:
             self.render_mode = "sumo"
 
-env = TrafficEnvironment()
 
