@@ -18,7 +18,7 @@ class TrafficEnvironment(gym.Env):
         self.path = os.path.dirname(os.path.abspath(__file__))
         self.network = Network(self.config, self.path, self.render_mode)
 
-    def get_state(self):
+    def action_handler(self, action):
         pass
     def get_reward(self):
         pass
@@ -31,12 +31,12 @@ class TrafficEnvironment(gym.Env):
     def step(self, action) -> None:
         traci.simulationStep(10.0)
         info = {}
-        observation = self.get_state()
+        observation = self.action_handler(action)
         reward = self.get_reward()
         terminated = False
         truncated = False
 
-        return observation, reward, terminated, truncated,  info
+        return observation, reward, terminated, truncated, info
 
 
     def reset(self) -> None:
@@ -52,7 +52,5 @@ class TrafficEnvironment(gym.Env):
         elif self.config["RENDER_MODE"] == None:
             self.render_mode = "sumo"
 
-
-
 env = TrafficEnvironment()
-for i in range(1000):
+
