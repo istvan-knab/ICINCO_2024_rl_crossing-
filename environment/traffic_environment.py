@@ -19,7 +19,7 @@ class TrafficEnvironment(gym.Env):
         self.network = Network(self.config, self.path, self.render_mode)
         self.simulation_step = 0
 
-    def action_handler(self, action):
+    def action_handler(self, action, signal):
         """
         TLS incoming lanes states
         """
@@ -50,13 +50,13 @@ class TrafficEnvironment(gym.Env):
             self.config = yaml.safe_load(file)
 
 
-    def step(self, action) -> None:
+    def step(self, action, signal) -> None:
 
         for seconds in range(self.config['STEPS']):
             traci.simulationStep()
             self.simulation_step += 1
         info = {}
-        observation = self.action_handler(action)
+        observation = self.action_handler(action, signal)
         reward = self.get_reward()
         terminated = self.is_terminal()
         truncated = False

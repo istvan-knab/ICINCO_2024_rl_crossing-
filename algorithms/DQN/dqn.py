@@ -64,11 +64,11 @@ class DQNAgent(object):
 
             while not done:
 
-                for signals in self.env.network.instance.traffic_light:
+                for signal in self.env.network.instance.traffic_light:
                     state = self.env.get_state()
                     state = torch.tensor(state, dtype=torch.float32, device=config["DEVICE"]).unsqueeze(0)
                     action = self.action_selection.epsilon_greedy_selection(self.model, state)
-                    observation, reward, terminated, truncated, _ = self.env.step(action)
+                    observation, reward, terminated, truncated, _ = self.env.step(action, signal)
 
                     reward = torch.tensor([[reward]], device=self.device)
                     episode_reward += reward
