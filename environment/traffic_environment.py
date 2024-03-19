@@ -23,11 +23,11 @@ class TrafficEnvironment(gym.Env):
         """
         TLS incoming lanes states
         """
-        observation = observation = np.array([0, 0, 0, 0])
+        observation = np.array([0, 0, 0, 0])
         return observation
 
     def get_state(self):
-        observation = observation = np.array([0, 0, 0, 0])
+        observation = np.array([0, 0, 0, 0])
         return observation
     def get_reward(self):
         "The least waiting time on the whole network"
