@@ -78,6 +78,7 @@ class DQNAgent(object):
                     traci.simulationStep()
 
                 for signal in range(len(self.env.network.instance.traffic_light)):
+                    # TODO do the loop inside the env
                     observation, reward, terminated, truncated, _ = self.env.step(actions[signal], signal)
                     episode_reward += reward
                     reward = torch.tensor([[reward]], device=self.device)
