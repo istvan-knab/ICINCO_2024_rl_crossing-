@@ -1,6 +1,6 @@
 # Agent
 algorithm : "DQN"
-EPISODES : 500
+EPISODES : 1000
 
 # Environment
 environment : "TrafficEnv"

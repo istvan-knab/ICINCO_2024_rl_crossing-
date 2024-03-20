@@ -24,10 +24,13 @@ class Network:
         else:
             sys.exit("please declare environment variable 'SUMO_HOME'")
 
-        self.sumoCmd = [self.render_mode, "-c", self.instance.PATH, "--start",
+        self.sumoCmd = [self.config["RENDER_MODE"], "-c", self.instance.PATH, "--start",
                         "--quit-on-end", "--collision.action", "remove",
                         "--no-warnings"]
+
         traci.start(self.sumoCmd)
+        if self.render_mode == 'human':
+            traci.gui.setSchema("View #0", "real world")
         self.instance.config_net(lanes=list(traci.lane.getIDList()), junctions=list(traci.trafficlight.getIDList()))
 
     def select_size(self):

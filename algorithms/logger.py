@@ -1,4 +1,6 @@
 import neptune
+
+from environment.traffic_environment import Network
 class Logger(object):
     def __init__(self, config: dict):
         device = config['DEVICE']
@@ -44,7 +46,7 @@ class Logger(object):
         :return: None
         """
         self.episode = args[0]
-        self.reward = int(args[1])
+        self.reward = args[1]
         self.epsilon = args[2]["EPSILON"]
         self.config = args[2]
         self.loss = args[3]

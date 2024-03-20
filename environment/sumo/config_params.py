@@ -1,3 +1,4 @@
+import numpy as np
 import traci
 
 class SumoNetworkParameters:
@@ -8,6 +9,7 @@ class SumoNetworkParameters:
     def config_net(self, lanes, junctions):
         self.incoming_lanes(lanes)
         self.get_lights(junctions)
+        self.set_sections()
 
     def incoming_lanes(self, lanes):
         for lane in lanes:
@@ -18,6 +20,17 @@ class SumoNetworkParameters:
         for junction in junctions:
             if "TLS" in junction:
                 self.traffic_light.append(junction)
+
+    def set_sections(self):
+
+        self.sections = []
+        count = 0
+        for traffic_light in range(len(self.traffic_light)):
+            single_section = [" ", " ", " ", " "]
+            for section in range(4):
+                single_section[section] = self.lanes[count]
+                count += 1
+            self.sections.append(single_section)
 
 
 class SingleIntersection(SumoNetworkParameters):

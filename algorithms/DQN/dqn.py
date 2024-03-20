@@ -59,19 +59,18 @@ class DQNAgent(object):
             state = torch.tensor(state, dtype=torch.float32, device=config["DEVICE"]).unsqueeze(0)
             done = False
             self.action_selection.epsilon_update()
-            episode_reward = 0
-            episode_loss = 0
+            episode_reward = 0.0
+            episode_loss = 0.0
 
             while not done:
 
                 for signal in self.env.network.instance.traffic_light:
-                    state = self.env.get_state()
+                    state = self.env.get_state(signal)
                     state = torch.tensor(state, dtype=torch.float32, device=config["DEVICE"]).unsqueeze(0)
                     action = self.action_selection.epsilon_greedy_selection(self.model, state)
                     observation, reward, terminated, truncated, _ = self.env.step(action, signal)
-
-                    reward = torch.tensor([[reward]], device=self.device)
                     episode_reward += reward
+                    reward = torch.tensor([[reward]], device=self.device)
                     done = torch.tensor([int(terminated or truncated)], device=self.device)
 
 
