@@ -7,7 +7,7 @@ environment : "TrafficEnv"
 RENDER_MODE : "human"
 
 # Run
-DEVICE : cuda
+DEVICE : cpu
 SEED : 0
 mode : "train"
 

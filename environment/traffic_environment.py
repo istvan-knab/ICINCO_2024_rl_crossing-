@@ -32,7 +32,7 @@ class TrafficEnvironment(gym.Env):
         TLS incoming lanes states
         """
         action = action * 2
-        traci.trafficlight.setPhase(signal, action)
+        traci.trafficlight.setPhase(self.signals[signal], action)
 
 
     def get_state(self, signal):
@@ -70,11 +70,9 @@ class TrafficEnvironment(gym.Env):
 
         info = {}
         self.action_handler(action, signal)
-        for seconds in range(self.config['STEPS']):
-            traci.simulationStep()
-            self.simulation_step += 1
+        self.simulation_step += self.config["STEPS"]
         reward = self.get_reward()
-        observation = self.get_state(signal)
+        observation = self.get_state(self.signals[signal])
         terminated = self.is_terminal()
         truncated = False
 

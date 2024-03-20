@@ -7,6 +7,7 @@ from collections import OrderedDict
 import gymnasium as gym
 import yaml
 import numpy as np
+import traci
 
 from algorithms.DQN.epsilon_greedy import EpsilonGreedy
 from algorithms.DQN.replay_memory import ReplayMemory
@@ -64,23 +65,33 @@ class DQNAgent(object):
 
             while not done:
 
+                states = []
+                actions = []
                 for signal in self.env.network.instance.traffic_light:
                     state = self.env.get_state(signal)
                     state = torch.tensor(state, dtype=torch.float32, device=config["DEVICE"]).unsqueeze(0)
+                    states.append(state)
                     action = self.action_selection.epsilon_greedy_selection(self.model, state)
-                    observation, reward, terminated, truncated, _ = self.env.step(action, signal)
+                    actions.append(action)
+
+                for seconds in range(self.env.config['STEPS']):
+                    traci.simulationStep()
+
+                for signal in range(len(self.env.network.instance.traffic_light)):
+                    observation, reward, terminated, truncated, _ = self.env.step(actions[signal], signal)
                     episode_reward += reward
                     reward = torch.tensor([[reward]], device=self.device)
                     done = torch.tensor([int(terminated or truncated)], device=self.device)
 
-
                     next_state = torch.tensor(observation, dtype=torch.float32, device=self.device).unsqueeze(0)
-                    action = torch.tensor([[action]], dtype=torch.long, device=self.device)
+                    action = torch.tensor([[actions[signal]]], dtype=torch.long, device=self.device)
 
-                    self.memory.push(state, action, next_state, reward, done)
+                    self.memory.push(states[signal], action, next_state, reward, done)
 
-                    if done:
-                        break
+
+
+                if done:
+                    break
 
                 loss = self.fit_model()
                 episode_loss += loss

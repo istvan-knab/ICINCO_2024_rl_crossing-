@@ -17,6 +17,8 @@ class Network:
             This function is responsible to build connection between gui and python
             :return: None
         """
+        sumo_home = "/usr/share/sumo"
+        os.environ["SUMO_HOME"] = sumo_home
         if 'SUMO_HOME' in os.environ:
             tools = os.path.join(os.environ['SUMO_HOME'], 'tools')
             sys.path.append(tools)
