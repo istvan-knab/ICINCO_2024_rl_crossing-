@@ -62,7 +62,9 @@ class DQNAgent(object):
             self.action_selection.epsilon_update()
             episode_reward = 0.0
             episode_loss = 0.0
-
+            #warmup
+            for warmup in range(self.env.config["WARMUP_STEPS"]):
+                traci.simulationStep()
             while not done:
 
                 states = []
@@ -74,22 +76,15 @@ class DQNAgent(object):
                     action = self.action_selection.epsilon_greedy_selection(self.model, state)
                     actions.append(action)
 
-                for seconds in range(self.env.config['STEPS']):
-                    traci.simulationStep()
+                observation, reward, terminated, truncated, _ = self.env.step(actions)
+                episode_reward += reward
+                reward = torch.tensor([[reward]], device=self.device)
+                done = torch.tensor([int(terminated or truncated)], device=self.device)
 
                 for signal in range(len(self.env.network.instance.traffic_light)):
-                    # TODO do the loop inside the env
-                    observation, reward, terminated, truncated, _ = self.env.step(actions[signal], signal)
-                    episode_reward += reward
-                    reward = torch.tensor([[reward]], device=self.device)
-                    done = torch.tensor([int(terminated or truncated)], device=self.device)
-
-                    next_state = torch.tensor(observation, dtype=torch.float32, device=self.device).unsqueeze(0)
+                    next_state = torch.tensor(observation[signal], dtype=torch.float32, device=self.device).unsqueeze(0)
                     action = torch.tensor([[actions[signal]]], dtype=torch.long, device=self.device)
-
                     self.memory.push(states[signal], action, next_state, reward, done)
-
-
 
                 if done:
                     break

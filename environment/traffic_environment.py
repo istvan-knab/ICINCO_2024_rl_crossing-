@@ -12,7 +12,7 @@ class TrafficEnvironment(gym.Env):
     def __init__(self):
 
         self.observation_space = gym.spaces.Box(low=0, high=1000, shape=(4,), dtype=np.float32)
-        self.action_space = gym.spaces.Discrete(2)
+        self.action_space = gym.spaces.Discrete(2, seed=42)
         self.config()
         self.render()
         self.path = os.path.dirname(os.path.abspath(__file__))
@@ -32,7 +32,7 @@ class TrafficEnvironment(gym.Env):
         TLS incoming lanes states
         """
         action = action * 2
-        traci.trafficlight.setPhase(self.signals[signal], action)
+        traci.trafficlight.setPhase(signal, action)
 
 
     def get_state(self, signal):
@@ -66,13 +66,20 @@ class TrafficEnvironment(gym.Env):
             self.config = yaml.safe_load(file)
 
 
-    def step(self, action, signal) -> None:
-
+    def step(self, action) -> None:
+        observation = []
         info = {}
-        self.action_handler(action, signal)
+        count = 0
+        for signal in self.network.instance.traffic_light:
+            self.action_handler(action[count], signal)
+            count += 1
+        for step in range (self.config['STEPS']):
+            traci.simulationStep()
         self.simulation_step += self.config["STEPS"]
         reward = self.get_reward()
-        observation = self.get_state(self.signals[signal])
+        for signal in self.network.instance.traffic_light:
+            state = self.get_state(signal)
+            observation.append(state)
         terminated = self.is_terminal()
         truncated = False
 

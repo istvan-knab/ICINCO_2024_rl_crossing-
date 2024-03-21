@@ -5,7 +5,7 @@ import gymnasium as gym
 import torch
 
 from algorithms.DQN.dqn import DQNAgent
-from algorithms.PPO.ppo import PPOAgent
+from algorithms.PPO.proximal_policy_optimization import PPOAgent
 from algorithms.io import IO
 from algorithms.DQN.epsilon_greedy import EpsilonGreedy
 

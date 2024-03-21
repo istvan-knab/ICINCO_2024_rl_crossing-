@@ -8,6 +8,8 @@ class ReplayMemory:
 
         self.BATCH_SIZE = BATCH_SIZE
         self.memory = deque([], maxlen=BUFFER_SIZE)
+        random.seed(0)
+
 
     def push(self, *args):
         """

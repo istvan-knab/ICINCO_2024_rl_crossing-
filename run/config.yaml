@@ -1,6 +1,6 @@
 # Agent
 algorithm : "DQN"
-EPISODES : 1000
+EPISODES : 1500
 
 # Environment
 environment : "TrafficEnv"
@@ -15,9 +15,9 @@ mode : "train"
 ALPHA : 0.001
 GAMMA : 0.99
 EPSILON : 1.0
-EPSILON_DECAY : 0.9975
+EPSILON_DECAY : 0.998
 EPSILON_THRESHOLD: 0.1
 
 #Save
 PATH : "../algorithms/neural_networks/models"
-PATH_TEST : "algorithms/neural_networks/models/CartPole-v11709124021.985185.pth"
+PATH_TEST : "/home/sztaki/Documents/ICINCO_2024_rl_crossing-/algorithms/neural_networks/models/TrafficEnv_DQN_1711029735.4484918.pth"
