@@ -1,10 +1,10 @@
 # Agent
 algorithm : "DQN"
-EPISODES : 1
+EPISODES : 1000
 
 # Environment
 environment : "TrafficEnv"
-RENDER_MODE : "human"
+RENDER_MODE : "sumo"
 
 # Run
 DEVICE : cpu
@@ -15,7 +15,7 @@ mode : "train"
 ALPHA : 0.001
 GAMMA : 0.99
 EPSILON : 1.0
-EPSILON_DECAY : 0.998
+EPSILON_DECAY : 0.9975
 EPSILON_THRESHOLD: 0.1
 
 #Save

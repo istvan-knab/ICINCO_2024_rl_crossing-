@@ -8,9 +8,9 @@ class IO(object):
     def read_to_np_array(self, filename):
         pass
 
-    def save_model(self, model, config):
+    def save_model(self, model, config, intersections):
         PATH = (config['PATH'] + '/' + str(config["environment"]) + "_" + str(config["algorithm"]) +
-                "_" + str(time.time()) + ".pth")
+                "_" + str(time.time()) + "_" + str(intersections) + ".pth")
         torch.save(model, PATH)
 
 
