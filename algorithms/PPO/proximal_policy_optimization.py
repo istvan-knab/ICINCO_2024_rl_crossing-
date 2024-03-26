@@ -24,9 +24,6 @@ class PPOAgent(object):
         self.memory = Memory(self.ppo_config["BATCH_SIZE"])
         self.logger = Logger(config)
         self.seed = config["SEED"]
-        #TODO:transition also in memory
-        #self.transition = namedtuple('Transition', ('state', 'action', ''))
-
 
     def train(self, config):
         score_history = []
@@ -52,8 +49,6 @@ class PPOAgent(object):
             score_history.append(episode_reward)
             avg_score.append(np.mean(score_history[100:]))
             self.logger.step(episode, episode_reward, self.config, loss)
-
-
 
     def choose_action(self, state):
         state = torch.tensor(np.array([state]), dtype=torch.float32)
@@ -111,8 +106,3 @@ class PPOAgent(object):
 
         self.memory.clear()
         return episode_loss
-
-
-
-
-

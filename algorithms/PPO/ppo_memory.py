@@ -1,6 +1,7 @@
 import numpy as np
 class Memory:
     def __init__(self, batch_size):
+        self.batch_size = batch_size
         self.states = []
         self.probabilities = []
         self.values = []
@@ -8,7 +9,6 @@ class Memory:
         self.rewards = []
         self.dones = []
 
-        self.batch_size = batch_size
 
     def generate_batch(self):
         number_of_states = len(self.states)
