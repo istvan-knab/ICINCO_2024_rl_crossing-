@@ -93,7 +93,7 @@ class DQNAgent(object):
                 episode_loss += loss
 
             self.logger.step(episode, episode_reward, self.config, episode_loss)
-            if episode % self.dqn_config["TAU"]:
+            if episode % self.dqn_config["TAU"] == 0:
                 self.target.load_state_dict(OrderedDict(self.model.state_dict()))
                 self.target = self.model
 
