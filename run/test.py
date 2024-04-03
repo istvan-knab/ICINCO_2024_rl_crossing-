@@ -28,7 +28,8 @@ class TestTraffic:
         #self.delay_based()
         self.marl()
     def simple(self):
-
+        for signal in self.env.signals:
+            traci.trafficlight.setProgram(signal, "static")
         for warmup in range(self.env.config["WARMUP_STEPS"]):
             traci.simulationStep()
 
@@ -39,11 +40,25 @@ class TestTraffic:
 
     def actuated(self):
         for signal in self.env.signals:
-            traci.trafficlight.setProgramLogic(signal, "actuated")
+            traci.trafficlight.setProgram(signal, "actuated")
+
+        for warmup in range(self.env.config["WARMUP_STEPS"]):
+            traci.simulationStep()
+
+        steps = self.test_steps * self.env.config["STEPS"]
+        for step in range(steps):
+            traci.simulationStep()
 
     def delay_based(self):
         for signal in self.env.signals:
-            traci.trafficlight.setProgramLogic(signal, "delay_based")
+            traci.trafficlight.setProgram(signal, "delay")
+
+        for warmup in range(self.env.config["WARMUP_STEPS"]):
+            traci.simulationStep()
+
+        steps = self.test_steps * self.env.config["STEPS"]
+        for step in range(steps):
+            traci.simulationStep()
 
     def marl(self):
         PATH = self.config["PATH_TEST"]

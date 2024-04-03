@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- generated on 2024-03-19 13:52:56 by Eclipse SUMO netedit Version 1.19.0
+<!-- generated on 2024-04-03 10:07:45 by Eclipse SUMO netedit Version 1.19.0
 <configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/neteditConfiguration.xsd">
 
     <input>
@@ -113,10 +113,10 @@
         <lane id="lane_0_3_0" index="0" speed="13.89" length="192.80" shape="0.00,1.60 -192.80,1.60"/>
     </edge>
 
-    <tlLogic id="TLS1" type="static" programID="0" offset="0">
-        <phase duration="42" state="GGgrrrGGgrrr"/>
+    <tlLogic id="TLS1" type="delay_based" programID="0" offset="0">
+        <phase duration="42" state="GGgrrrGGgrrr" minDur="5" maxDur="50"/>
         <phase duration="3"  state="yyyrrryyyrrr"/>
-        <phase duration="42" state="rrrGGgrrrGGg"/>
+        <phase duration="42" state="rrrGGgrrrGGg" minDur="5" maxDur="50"/>
         <phase duration="3"  state="rrryyyrrryyy"/>
     </tlLogic>
 
