@@ -2,6 +2,8 @@ from collections import namedtuple
 import traci
 import torch
 import yaml
+import numpy as np
+import matplotlib.pyplot as plt
 
 from environment.traffic_environment import TrafficEnvironment
 from algorithms.DQN.epsilon_greedy import EpsilonGreedy
@@ -23,11 +25,19 @@ class TestTraffic:
             self.config = yaml.safe_load(file)
 
     def run(self):
-        self.simple()
-        #self.actuated()
-        #self.delay_based()
-        self.marl()
+        simple_data = self.simple()
+        actuated_data = self.actuated()
+        delay_data = self.delay_based()
+        marl_data = self.marl()
+        print(simple_data)
+        print(actuated_data)
+        print(delay_data)
+        print(marl_data)
+        self.plot(simple_data, actuated_data, delay_data, marl_data)
+
+
     def simple(self):
+        data = []
         for signal in self.env.signals:
             traci.trafficlight.setProgram(signal, "static")
         for warmup in range(self.env.config["WARMUP_STEPS"]):
@@ -36,9 +46,13 @@ class TestTraffic:
         steps = self.test_steps * self.env.config["STEPS"]
         for step in range(steps):
             traci.simulationStep()
+            data.append(self.log_values())
+
+        return data
 
 
     def actuated(self):
+        data = []
         for signal in self.env.signals:
             traci.trafficlight.setProgram(signal, "actuated")
 
@@ -48,8 +62,11 @@ class TestTraffic:
         steps = self.test_steps * self.env.config["STEPS"]
         for step in range(steps):
             traci.simulationStep()
+            data.append(self.log_values())
+        return data
 
     def delay_based(self):
+        data = []
         for signal in self.env.signals:
             traci.trafficlight.setProgram(signal, "delay")
 
@@ -59,8 +76,12 @@ class TestTraffic:
         steps = self.test_steps * self.env.config["STEPS"]
         for step in range(steps):
             traci.simulationStep()
+            data.append(self.log_values())
+
+        return data
 
     def marl(self):
+        data = []
         PATH = self.config["PATH_TEST"]
         agent = torch.load(PATH)
         agent.eval()
@@ -84,13 +105,49 @@ class TestTraffic:
                     actions.append(action)
 
                 observation, reward, terminated, truncated, _ = self.env.step(actions)
+                data.append(self.log_values())
                 if terminated or truncated:
                     done = True
 
             print(episode)
+            return data
 
-    def log_values(self, data):
-        ...
+    def plot(self, static, actuated, delayed, marl):
+        data = 3
+        static = np.array([row[data] for row in static])
+        actuated = np.array([row[data] for row in actuated])
+        delayed = np.array([row[data] for row in delayed])
+        marl = np.array([row[data] for row in marl])
+        x = np.arange(len(static))
+
+        plt.figure(figsize=[10, 5])  # a new figure window
+        plt.plot(x, static, label='static')
+        plt.plot(x, actuated, label='actuated')
+        plt.plot(x, delayed, label='delayed')
+        #plt.plot(x, marl, label='marl')
+        plt.legend()
+        plt.show()
+    def log_values(self):
+        waiting_time = []
+        speed = []
+        co2 = []
+        nox = []
+        halting_vehicles = []
+
+        for lane in self.env.network.instance.lanes:
+            waiting_time.append(traci.lane.getWaitingTime(lane))
+            speed.append(traci.lane.getLastStepMeanSpeed(lane))
+            co2.append(traci.lane.getCO2Emission(lane))
+            nox.append(traci.lane.getNOxEmission(lane))
+            halting_vehicles.append(traci.lane.getLastStepHaltingNumber(lane))
+
+        avg_waiting_time = np.mean(waiting_time)
+        avg_speed = np.mean(speed)
+        avg_co2 = np.mean(co2)
+        avg_nox = np.mean(nox)
+        avg_halting_vehicles = np.mean(halting_vehicles)
+
+        return [avg_waiting_time, avg_speed, avg_co2, avg_nox, avg_halting_vehicles]
 
 if __name__ == '__main__':
     test = TestTraffic()

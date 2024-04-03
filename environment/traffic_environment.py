@@ -106,4 +106,24 @@ class TrafficEnvironment(gym.Env):
         elif self.config["RENDER_MODE"] == None:
             self.render_mode = "sumo"
 
+    def log_values(self):
+        waiting_time = []
+        speed = []
+        co2 = []
+        nox = []
+        halting_vehicles = []
 
+        for lane in self.env.network.instance.lanes:
+            waiting_time.append(traci.lane.getWaitingTime(lane))
+            speed.append(traci.lane.getLastStepMeanSpeed(lane))
+            co2.append(traci.lane.getCO2Emission(lane))
+            nox.append(traci.lane.getNOxEmission(lane))
+            halting_vehicles.append(traci.lane.getLastStepHaltingNumber(lane))
+
+        avg_waiting_time = np.mean(waiting_time)
+        avg_speed = np.mean(speed)
+        avg_co2 = np.mean(co2)
+        avg_nox = np.mean(nox)
+        avg_halting_vehicles = np.mean(halting_vehicles)
+
+        return [avg_waiting_time, avg_speed, avg_co2, avg_nox, avg_halting_vehicles]
