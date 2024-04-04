@@ -8,6 +8,7 @@
     <input>
         <net-file value="4_intersection.net.xml"/>
         <route-files value="4_intersection.rou.xml"/>
+        <additional-files value="4_intersection_programs.add.xml"/>
     </input>
 
 </configuration>

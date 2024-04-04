@@ -47,10 +47,12 @@ class TrafficEnvironment(gym.Env):
     def get_reward(self):
         "The least waiting time on the whole network"
         waiting_times = 0
+        speed = 0
         lanes = self.network.instance.lanes
         for lane in lanes:
             waiting_times += traci.lane.getWaitingTime(lane)
-        reward = 1.0 / (1.0 + waiting_times)
+            speed += traci.lane.getLastStepMeanSpeed(lane)
+        reward = (speed / len(lanes))/ (1.0 + waiting_times)
         return reward
 
     def is_terminal(self):
@@ -68,13 +70,16 @@ class TrafficEnvironment(gym.Env):
 
     def step(self, action) -> None:
         observation = []
-        info = {}
+        info = []
+
         count = 0
         for signal in self.network.instance.traffic_light:
             self.action_handler(action[count], signal)
             count += 1
         for step in range (self.config['STEPS']):
             traci.simulationStep()
+            if self.config["mode"] == "test":
+                info.append(self.log_values())
         self.simulation_step += self.config["STEPS"]
         reward = self.get_reward()
         for signal in self.network.instance.traffic_light:
@@ -113,7 +118,7 @@ class TrafficEnvironment(gym.Env):
         nox = []
         halting_vehicles = []
 
-        for lane in self.env.network.instance.lanes:
+        for lane in self.network.instance.lanes:
             waiting_time.append(traci.lane.getWaitingTime(lane))
             speed.append(traci.lane.getLastStepMeanSpeed(lane))
             co2.append(traci.lane.getCO2Emission(lane))

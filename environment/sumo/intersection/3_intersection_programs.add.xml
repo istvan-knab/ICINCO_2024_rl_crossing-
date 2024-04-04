@@ -32,60 +32,60 @@
 -->
 
 <additional xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/additional_file.xsd">
-    <tlLogic id="TLS1" type="actuated" programID="actuated" offset="0">
-        <phase duration="42" state="GGgrrrGGgrrr"/>
-        <phase duration="3" state="yyyrrryyyrrr"/>
-        <phase duration="42" state="rrrGGgrrrGGg"/>
-        <phase duration="3" state="rrryyyrrryyy"/>
-    </tlLogic>
-    <tlLogic id="TLS1" type="delay_based" programID="delay"  offset="0">
-        <phase duration="42" state="GGgrrrGGgrrr" minDur="5" maxDur="50"/>
-        <phase duration="3" state="yyyrrryyyrrr"/>
-        <phase duration="42" state="rrrGGgrrrGGg" minDur="5" maxDur="50"/>
-        <phase duration="3" state="rrryyyrrryyy"/>
-    </tlLogic>
     <tlLogic id="TLS1" type="static" programID="static" offset="0">
         <phase duration="42" state="GGgrrrGGgrrr"/>
         <phase duration="3" state="yyyrrryyyrrr"/>
         <phase duration="42" state="rrrGGgrrrGGg"/>
         <phase duration="3" state="rrryyyrrryyy"/>
     </tlLogic>
+    <tlLogic id="TLS1" type="actuated" programID="actuated" offset="0">
+        <phase duration="42" state="GGgrrrGGgrrr" minDur="10" maxDur="50"/>
+        <phase duration="3" state="yyyrrryyyrrr"/>
+        <phase duration="42" state="rrrGGgrrrGGg" minDur="10" maxDur="50"/>
+        <phase duration="3" state="rrryyyrrryyy"/>
+    </tlLogic>
+    <tlLogic id="TLS1" type="delay_based" programID="delay" offset="0">
+        <phase duration="42" state="GGgrrrGGgrrr" minDur="10" maxDur="50"/>
+        <phase duration="3" state="yyyrrryyyrrr"/>
+        <phase duration="42" state="rrrGGgrrrGGg" minDur="10" maxDur="50"/>
+        <phase duration="3" state="rrryyyrrryyy"/>
+    </tlLogic>
 
-    <tlLogic id="TLS2" type="actuated" programID="actuated" offset="0">
-        <phase duration="42" state="GGgrrrGGgrrr"/>
-        <phase duration="3" state="yyyrrryyyrrr"/>
-        <phase duration="42" state="rrrGGgrrrGGg"/>
-        <phase duration="3" state="rrryyyrrryyy"/>
-    </tlLogic>
-    <tlLogic id="TLS2" type="delay_based" programID="delay"  offset="0">
-        <phase duration="42" state="GGgrrrGGgrrr" minDur="5" maxDur="50"/>
-        <phase duration="3" state="yyyrrryyyrrr"/>
-        <phase duration="42" state="rrrGGgrrrGGg" minDur="5" maxDur="50"/>
-        <phase duration="3" state="rrryyyrrryyy"/>
-    </tlLogic>
     <tlLogic id="TLS2" type="static" programID="static" offset="0">
         <phase duration="42" state="GGgrrrGGgrrr"/>
         <phase duration="3" state="yyyrrryyyrrr"/>
         <phase duration="42" state="rrrGGgrrrGGg"/>
         <phase duration="3" state="rrryyyrrryyy"/>
     </tlLogic>
+    <tlLogic id="TLS2" type="actuated" programID="actuated" offset="0">
+        <phase duration="42" state="GGgrrrGGgrrr" minDur="10" maxDur="50"/>
+        <phase duration="3" state="yyyrrryyyrrr"/>
+        <phase duration="42" state="rrrGGgrrrGGg" minDur="10" maxDur="50"/>
+        <phase duration="3" state="rrryyyrrryyy"/>
+    </tlLogic>
+    <tlLogic id="TLS2" type="delay_based" programID="delay" offset="0">
+        <phase duration="42" state="GGgrrrGGgrrr" minDur="10" maxDur="50"/>
+        <phase duration="3" state="yyyrrryyyrrr"/>
+        <phase duration="42" state="rrrGGgrrrGGg" minDur="10" maxDur="50"/>
+        <phase duration="3" state="rrryyyrrryyy"/>
+    </tlLogic>
 
-    <tlLogic id="TLS3" type="actuated" programID="actuated" offset="0">
-        <phase duration="42" state="GGgrrrGGgrrr"/>
-        <phase duration="3" state="yyyrrryyyrrr"/>
-        <phase duration="42" state="rrrGGgrrrGGg"/>
-        <phase duration="3" state="rrryyyrrryyy"/>
-    </tlLogic>
-    <tlLogic id="TLS3" type="delay_based" programID="delay"  offset="0">
-        <phase duration="42" state="GGgrrrGGgrrr" minDur="5" maxDur="50"/>
-        <phase duration="3" state="yyyrrryyyrrr"/>
-        <phase duration="42" state="rrrGGgrrrGGg" minDur="5" maxDur="50"/>
-        <phase duration="3" state="rrryyyrrryyy"/>
-    </tlLogic>
     <tlLogic id="TLS3" type="static" programID="static" offset="0">
         <phase duration="42" state="GGgrrrGGgrrr"/>
         <phase duration="3" state="yyyrrryyyrrr"/>
         <phase duration="42" state="rrrGGgrrrGGg"/>
+        <phase duration="3" state="rrryyyrrryyy"/>
+    </tlLogic>
+    <tlLogic id="TLS3" type="actuated" programID="actuated" offset="0">
+        <phase duration="42" state="GGgrrrGGgrrr" minDur="10" maxDur="50"/>
+        <phase duration="3" state="yyyrrryyyrrr"/>
+        <phase duration="42" state="rrrGGgrrrGGg" minDur="10" maxDur="50"/>
+        <phase duration="3" state="rrryyyrrryyy"/>
+    </tlLogic>
+    <tlLogic id="TLS3" type="delay_based" programID="delay" offset="0">
+        <phase duration="42" state="GGgrrrGGgrrr" minDur="10" maxDur="50"/>
+        <phase duration="3" state="yyyrrryyyrrr"/>
+        <phase duration="42" state="rrrGGgrrrGGg" minDur="10" maxDur="50"/>
         <phase duration="3" state="rrryyyrrryyy"/>
     </tlLogic>
 </additional>

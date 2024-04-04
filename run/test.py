@@ -4,6 +4,7 @@ import torch
 import yaml
 import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd
 
 from environment.traffic_environment import TrafficEnvironment
 from algorithms.DQN.epsilon_greedy import EpsilonGreedy
@@ -16,7 +17,6 @@ class TestTraffic:
         self.parameters()
         self.env = TrafficEnvironment()
         self.action_selection = EpsilonGreedy(self.config, self.env)
-        self.test_steps = 100
 
 
     def parameters(self) -> dict:
@@ -26,13 +26,11 @@ class TestTraffic:
 
     def run(self):
         simple_data = self.simple()
+        self.env.reset()
         actuated_data = self.actuated()
+        self.env.reset()
         delay_data = self.delay_based()
         marl_data = self.marl()
-        print(simple_data)
-        print(actuated_data)
-        print(delay_data)
-        print(marl_data)
         self.plot(simple_data, actuated_data, delay_data, marl_data)
 
 
@@ -43,7 +41,7 @@ class TestTraffic:
         for warmup in range(self.env.config["WARMUP_STEPS"]):
             traci.simulationStep()
 
-        steps = self.test_steps * self.env.config["STEPS"]
+        steps = self.env.config["max_step"]
         for step in range(steps):
             traci.simulationStep()
             data.append(self.log_values())
@@ -59,7 +57,7 @@ class TestTraffic:
         for warmup in range(self.env.config["WARMUP_STEPS"]):
             traci.simulationStep()
 
-        steps = self.test_steps * self.env.config["STEPS"]
+        steps = self.env.config["max_step"]
         for step in range(steps):
             traci.simulationStep()
             data.append(self.log_values())
@@ -73,7 +71,7 @@ class TestTraffic:
         for warmup in range(self.env.config["WARMUP_STEPS"]):
             traci.simulationStep()
 
-        steps = self.test_steps * self.env.config["STEPS"]
+        steps = self.env.config["max_step"]
         for step in range(steps):
             traci.simulationStep()
             data.append(self.log_values())
@@ -86,6 +84,9 @@ class TestTraffic:
         agent = torch.load(PATH)
         agent.eval()
         self.config["EPSILON"] = 0
+
+        for signal in self.env.signals:
+            traci.trafficlight.setProgram(signal, "static")
 
         for episode in range(self.config["EPISODES"]):
             state, info = self.env.reset()
@@ -104,29 +105,51 @@ class TestTraffic:
                     action = self.action_selection.epsilon_greedy_selection(agent, state)
                     actions.append(action)
 
-                observation, reward, terminated, truncated, _ = self.env.step(actions)
-                data.append(self.log_values())
+                observation, reward, terminated, truncated, episode_data = self.env.step(actions)
+                data.append(episode_data)
                 if terminated or truncated:
                     done = True
 
-            print(episode)
+            data_shape = int((np.shape(np.array(data).flatten())[0]) / 5)
+            data = np.reshape(data,(data_shape,5))
             return data
 
     def plot(self, static, actuated, delayed, marl):
+        "This describes which data is relevant in a certain test"
         data = 3
+        window_size = 50
         static = np.array([row[data] for row in static])
         actuated = np.array([row[data] for row in actuated])
         delayed = np.array([row[data] for row in delayed])
         marl = np.array([row[data] for row in marl])
         x = np.arange(len(static))
 
+        static = pd.DataFrame(static, columns=['data'])
+        actuated = pd.DataFrame(actuated, columns=['data'])
+        delayed = pd.DataFrame(delayed, columns=['data'])
+        marl = pd.DataFrame(marl, columns=['data'])
+
+        static['smoothed_data'] = static['data'].rolling(window=window_size).mean()
+        actuated['smoothed_data'] = actuated['data'].rolling(window=window_size).mean()
+        delayed['smoothed_data'] = delayed['data'].rolling(window=window_size).mean()
+        marl['smoothed_data'] = marl['data'].rolling(window=window_size).mean()
+
         plt.figure(figsize=[10, 5])  # a new figure window
-        plt.plot(x, static, label='static')
-        plt.plot(x, actuated, label='actuated')
-        plt.plot(x, delayed, label='delayed')
-        #plt.plot(x, marl, label='marl')
+        plt.plot(x, static["smoothed_data"], label='static')
+        plt.plot(x, actuated["smoothed_data"], label='actuated')
+        plt.plot(x, delayed["smoothed_data"], label='delayed')
+        plt.plot(x, marl["smoothed_data"], label='marl')
         plt.legend()
         plt.show()
+
+        print(f"Static : {np.mean(static['data'])}")
+        print(f"Delayed : {np.mean(delayed['data'])}")
+        print(f"Actuated : {np.mean(actuated['data'])}")
+        print(f"MARL : {np.mean(marl['data'])}")
+
+    def filter_data(self,*args):
+        filtered_data = None
+        return filtered_data
     def log_values(self):
         waiting_time = []
         speed = []

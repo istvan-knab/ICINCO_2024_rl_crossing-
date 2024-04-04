@@ -1,6 +1,6 @@
 # Agent
 algorithm : "DQN"
-EPISODES : 1200
+EPISODES : 2000
 
 # Environment
 environment : "TrafficEnv"
@@ -20,4 +20,5 @@ EPSILON_THRESHOLD: 0.1
 
 #Save
 PATH : "../algorithms/neural_networks/models"
-PATH_TEST : "/home/sztaki/Documents/ICINCO_2024_rl_crossing-/algorithms/neural_networks/models/TrafficEnv_DQN_1712144957.260895_4.pth"
+#Load
+PATH_TEST : "/home/sztaki/Documents/ICINCO_2024_rl_crossing-/algorithms/neural_networks/models/TrafficEnv_DQN_1712230824.5037785_4.pth"
