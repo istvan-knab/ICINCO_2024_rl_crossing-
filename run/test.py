@@ -31,8 +31,36 @@ class TestTraffic:
         self.env.reset()
         delay_data = self.delay_based()
         marl_data = self.marl()
+        self.print_results(simple_data, actuated_data, delay_data, marl_data)
         self.plot(simple_data, actuated_data, delay_data, marl_data)
 
+    def print_results(self,simple_data_in, actuated_data_in, delay_data_in, marl_data_in):
+
+        simple_data_in = np.array(simple_data_in)
+        actuated_data_in = np.array(actuated_data_in)
+        delay_data_in = np.array(delay_data_in)
+        marl_data_in = np.array(marl_data_in)
+        simple_data = []
+        actuated_data = []
+        delay_data = []
+        marl_data = []
+        for i in range(5):
+            simple_data.append(simple_data_in[:,i])
+            actuated_data.append(actuated_data_in[:, i])
+            delay_data.append(delay_data_in[:, i])
+            marl_data.append(marl_data_in[:,i])
+
+        print("\n")
+        print("\t \t \t Waiting time \t \t \t \t AVG speed \t \t  \t \t CO2 \t \t \t \t \t \t  "
+              "NOx \t \t \t \t  \t \t  Halting Vehicles")
+        print(f"Static    : {np.mean(simple_data[0])} \t \t {np.mean(simple_data[1])} \t \t \t  {np.mean(simple_data[2])} "
+              f"\t \t  {np.mean(simple_data[3])} \t \t {np.sum(simple_data[4])}")
+        print(f"Actuated  : {np.mean(actuated_data[0])} \t \t {np.mean(actuated_data[1])} \t \t \t  {np.mean(actuated_data[2])} "
+              f"\t \t  {np.mean(actuated_data[3])} \t \t {np.sum(actuated_data[4])}")
+        print(f"Delayed   : {np.mean(delay_data[0])} \t \t {np.mean(delay_data[1])} \t \t \t {np.mean(delay_data[2])} "
+              f"\t \t {np.mean(delay_data[3])} \t \t {np.sum(delay_data[4])}")
+        print(f"MARL      : {np.mean(marl_data[0])} \t \t {np.mean(marl_data[1])} \t \t \t {np.mean(marl_data[2])} "
+              f"\t \t {np.mean(marl_data[3])} \t \t {np.sum(marl_data[4])}")
 
     def simple(self):
         data = []
@@ -141,11 +169,6 @@ class TestTraffic:
         plt.plot(x, marl["smoothed_data"], label='marl')
         plt.legend()
         plt.show()
-
-        print(f"Static : {np.mean(static['data'])}")
-        print(f"Delayed : {np.mean(delayed['data'])}")
-        print(f"Actuated : {np.mean(actuated['data'])}")
-        print(f"MARL : {np.mean(marl['data'])}")
 
     def filter_data(self,*args):
         filtered_data = None

@@ -1,6 +1,6 @@
 RENDER_MODE : "sumo"
-NUMBER_OF_INTERSECTIONS : 2
+NUMBER_OF_INTERSECTIONS : 4
 STEPS : 10
 WARMUP_STEPS : 300
-max_step : 1800
+max_step : 1000
 mode : "test"
