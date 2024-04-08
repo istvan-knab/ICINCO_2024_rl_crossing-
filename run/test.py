@@ -144,7 +144,7 @@ class TestTraffic:
 
     def plot(self, static, actuated, delayed, marl):
         "This describes which data is relevant in a certain test"
-        data = 3
+        data = 4
         window_size = 50
         static = np.array([row[data] for row in static])
         actuated = np.array([row[data] for row in actuated])
