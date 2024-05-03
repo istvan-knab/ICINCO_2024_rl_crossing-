@@ -3,7 +3,9 @@ import traci
 import torch
 import yaml
 import numpy as np
+import matplotlib as mpl
 import matplotlib.pyplot as plt
+import matplotlib.style as style
 import pandas as pd
 
 from environment.traffic_environment import TrafficEnvironment
@@ -144,14 +146,15 @@ class TestTraffic:
 
     def plot(self, static, actuated, delayed, marl):
         "This describes which data is relevant in a certain test"
-        data = 4
-        window_size = 50
+        data = 1
+        window_size = 250
         static = np.array([row[data] for row in static])
         actuated = np.array([row[data] for row in actuated])
         delayed = np.array([row[data] for row in delayed])
         marl = np.array([row[data] for row in marl])
         x = np.arange(len(static))
 
+        mpl.rcParams['axes.facecolor'] = '#EEF3F9'
         static = pd.DataFrame(static, columns=['data'])
         actuated = pd.DataFrame(actuated, columns=['data'])
         delayed = pd.DataFrame(delayed, columns=['data'])
@@ -163,11 +166,12 @@ class TestTraffic:
         marl['smoothed_data'] = marl['data'].rolling(window=window_size).mean()
 
         plt.figure(figsize=[10, 5])  # a new figure window
-        plt.plot(x, static["smoothed_data"], label='static')
-        plt.plot(x, actuated["smoothed_data"], label='actuated')
-        plt.plot(x, delayed["smoothed_data"], label='delayed')
-        plt.plot(x, marl["smoothed_data"], label='marl')
+        plt.plot(x, static["smoothed_data"], label='static',color='#000099')
+        plt.plot(x, actuated["smoothed_data"], label='actuated',color='#0066CC')
+        plt.plot(x, delayed["smoothed_data"], label='delayed',color='#009999')
+        plt.plot(x, marl["smoothed_data"], label='marl',color='#006666')
         plt.legend()
+        plt.grid(True, linewidth=0.3, linestyle='-')
         plt.show()
 
     def filter_data(self,*args):
