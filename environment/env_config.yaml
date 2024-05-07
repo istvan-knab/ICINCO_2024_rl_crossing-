@@ -1,6 +1,6 @@
-RENDER_MODE : "sumo-gui"
+RENDER_MODE : "sumo"
 NUMBER_OF_INTERSECTIONS : 4
 STEPS : 10
 WARMUP_STEPS : 300
-max_step : 7200
+max_step : 3600
 mode : "test"
