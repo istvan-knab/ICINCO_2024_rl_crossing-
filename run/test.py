@@ -82,6 +82,9 @@ class TestTraffic:
     def actuated(self):
         data = []
 
+        for signal in self.env.signals:
+            traci.trafficlight.setProgram(signal, "static")
+
         for warmup in range(self.env.config["WARMUP_STEPS"]):
             traci.simulationStep()
 
@@ -96,6 +99,9 @@ class TestTraffic:
 
     def delay_based(self):
         data = []
+
+        for signal in self.env.signals:
+            traci.trafficlight.setProgram(signal, "static")
 
         for warmup in range(self.env.config["WARMUP_STEPS"]):
             traci.simulationStep()
