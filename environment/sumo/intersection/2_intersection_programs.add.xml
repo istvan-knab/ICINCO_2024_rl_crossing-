@@ -39,15 +39,15 @@
         <phase duration="3" state="rrryyyrrryyy"/>
     </tlLogic>
     <tlLogic id="TLS1" type="actuated" programID="actuated" offset="0">
-        <phase duration="42" state="GGgrrrGGgrrr" minDur="10" maxDur="60"/>
+        <phase duration="42" state="GGgrrrGGgrrr" minDur="10" maxDur="42"/>
         <phase duration="3" state="yyyrrryyyrrr"/>
-        <phase duration="42" state="rrrGGgrrrGGg" minDur="10" maxDur="60"/>
+        <phase duration="42" state="rrrGGgrrrGGg" minDur="10" maxDur="42"/>
         <phase duration="3" state="rrryyyrrryyy"/>
     </tlLogic>
     <tlLogic id="TLS1" type="delay_based" programID="delay" offset="0">
-        <phase duration="42" state="GGgrrrGGgrrr" minDur="10" maxDur="60"/>
+        <phase duration="42" state="GGgrrrGGgrrr" minDur="10" maxDur="42"/>
         <phase duration="3" state="yyyrrryyyrrr"/>
-        <phase duration="42" state="rrrGGgrrrGGg" minDur="10" maxDur="60"/>
+        <phase duration="42" state="rrrGGgrrrGGg" minDur="10" maxDur="42"/>
         <phase duration="3" state="rrryyyrrryyy"/>
     </tlLogic>
 
@@ -58,15 +58,15 @@
         <phase duration="3" state="rrryyyrrryyy"/>
     </tlLogic>
     <tlLogic id="TLS2" type="actuated" programID="actuated" offset="0">
-        <phase duration="42" state="GGgrrrGGgrrr" minDur="10" maxDur="60"/>
+        <phase duration="42" state="GGgrrrGGgrrr" minDur="10" maxDur="42"/>
         <phase duration="3" state="yyyrrryyyrrr"/>
-        <phase duration="42" state="rrrGGgrrrGGg" minDur="10" maxDur="60"/>
+        <phase duration="42" state="rrrGGgrrrGGg" minDur="10" maxDur="42"/>
         <phase duration="3" state="rrryyyrrryyy"/>
     </tlLogic>
     <tlLogic id="TLS2" type="delay_based" programID="delay" offset="0">
-        <phase duration="42" state="GGgrrrGGgrrr" minDur="10" maxDur="60"/>
+        <phase duration="42" state="GGgrrrGGgrrr" minDur="10" maxDur="42"/>
         <phase duration="3" state="yyyrrryyyrrr"/>
-        <phase duration="42" state="rrrGGgrrrGGg" minDur="10" maxDur="60"/>
+        <phase duration="42" state="rrrGGgrrrGGg" minDur="10" maxDur="42"/>
         <phase duration="3" state="rrryyyrrryyy"/>
     </tlLogic>
 </additional>

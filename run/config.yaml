@@ -1,10 +1,10 @@
 # Agent
 algorithm : "DQN"
-EPISODES : 1
+EPISODES : 3000
 
 # Environment
 environment : "TrafficEnv"
-RENDER_MODE : "sumo"
+RENDER_MODE : "sumo-gui"
 
 # Run
 DEVICE : cpu
