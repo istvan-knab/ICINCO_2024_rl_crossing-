@@ -163,7 +163,7 @@ class TestTraffic:
 
     def plot(self, static, actuated, delayed, marl):
         "This describes which data is relevant in a certain test"
-        data = 5
+        data = 0
         window_size = 400
         static = np.array([row[data] for row in static])
         actuated = np.array([row[data] for row in actuated])
@@ -171,7 +171,7 @@ class TestTraffic:
         marl = np.array([row[data] for row in marl])
         x = np.arange(len(static))
 
-        #mpl.rcParams['axes.facecolor'] = '#EEF3F9'
+        mpl.rcParams['axes.facecolor'] = '#EEF3F9'
         static = pd.DataFrame(static, columns=['data'])
         actuated = pd.DataFrame(actuated, columns=['data'])
         delayed = pd.DataFrame(delayed, columns=['data'])
@@ -182,13 +182,14 @@ class TestTraffic:
         delayed['smoothed_data'] = delayed['data'].rolling(window=window_size).mean()
         marl['smoothed_data'] = marl['data'].rolling(window=window_size).mean()
 
-        plt.figure(figsize=[10, 5])  # a new figure window
+        plt.figure(figsize=[10, 7])  # a new figure window
         plt.plot(x, static["smoothed_data"], label='Static',color='#000099')
         plt.plot(x, actuated["smoothed_data"], label='Actuated',color='#0066CC')
         plt.plot(x, delayed["smoothed_data"], label='Delay Based',color='#009999')
         plt.plot(x, marl["smoothed_data"], label='MARL',color='#f90001')
         plt.legend(fontsize='large')
-        plt.grid(True, linewidth=0.01, linestyle='-', color='#ead1dc')
+        plt.ylabel("Waiting time [s]")
+        plt.grid(True, linewidth=1, linestyle='-', color='#ead1dc')
         plt.show()
 
     def filter_data(self,*args):
