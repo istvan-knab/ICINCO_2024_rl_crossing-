@@ -52,6 +52,7 @@ class TestTraffic:
             delay_data.append(delay_data_in[:, i])
             marl_data.append(marl_data_in[:,i])
 
+
         print("\n")
         print("\t \t \t Waiting time \t \t \t \t AVG speed \t \t  \t \t CO2 \t \t \t \t \t \t  "
               "NOx \t \t \t \t  \t \t  Halting Vehicles")
@@ -65,7 +66,9 @@ class TestTraffic:
               f"\t \t {np.mean(marl_data[3])} \t \t {np.sum(marl_data[4])}")
 
     def simple(self):
+        print("Testing Simple...")
         data = []
+        arrived = 0
         for signal in self.env.signals:
             traci.trafficlight.setProgram(signal, "static")
         for warmup in range(self.env.config["WARMUP_STEPS"]):
@@ -80,7 +83,9 @@ class TestTraffic:
 
 
     def actuated(self):
+        print("Testing Actuated...")
         data = []
+        arrived = 0
 
         for signal in self.env.signals:
             traci.trafficlight.setProgram(signal, "static")
@@ -98,7 +103,9 @@ class TestTraffic:
         return data
 
     def delay_based(self):
+        print("Testing DelayBased...")
         data = []
+        arrived = 0
 
         for signal in self.env.signals:
             traci.trafficlight.setProgram(signal, "static")
@@ -118,6 +125,7 @@ class TestTraffic:
         return data
 
     def marl(self):
+        print("Testing MARL...")
         data = []
         PATH = self.config["PATH_TEST"]
         agent = torch.load(PATH)
@@ -149,21 +157,21 @@ class TestTraffic:
                 if terminated or truncated:
                     done = True
 
-            data_shape = int((np.shape(np.array(data).flatten())[0]) / 5)
-            data = np.reshape(data,(data_shape,5))
+            data_shape = int((np.shape(np.array(data).flatten())[0]) / 6)
+            data = np.reshape(data,(data_shape,6))
             return data
 
     def plot(self, static, actuated, delayed, marl):
         "This describes which data is relevant in a certain test"
-        data = 1
-        window_size = 250
+        data = 5
+        window_size = 400
         static = np.array([row[data] for row in static])
         actuated = np.array([row[data] for row in actuated])
         delayed = np.array([row[data] for row in delayed])
         marl = np.array([row[data] for row in marl])
         x = np.arange(len(static))
 
-        mpl.rcParams['axes.facecolor'] = '#EEF3F9'
+        #mpl.rcParams['axes.facecolor'] = '#EEF3F9'
         static = pd.DataFrame(static, columns=['data'])
         actuated = pd.DataFrame(actuated, columns=['data'])
         delayed = pd.DataFrame(delayed, columns=['data'])
@@ -175,12 +183,12 @@ class TestTraffic:
         marl['smoothed_data'] = marl['data'].rolling(window=window_size).mean()
 
         plt.figure(figsize=[10, 5])  # a new figure window
-        plt.plot(x, static["smoothed_data"], label='static',color='#000099')
-        plt.plot(x, actuated["smoothed_data"], label='actuated',color='#0066CC')
-        plt.plot(x, delayed["smoothed_data"], label='delayed',color='#009999')
-        plt.plot(x, marl["smoothed_data"], label='marl',color='#006666')
-        plt.legend()
-        plt.grid(True, linewidth=0.3, linestyle='-')
+        plt.plot(x, static["smoothed_data"], label='Static',color='#000099')
+        plt.plot(x, actuated["smoothed_data"], label='Actuated',color='#0066CC')
+        plt.plot(x, delayed["smoothed_data"], label='Delay Based',color='#009999')
+        plt.plot(x, marl["smoothed_data"], label='MARL',color='#f90001')
+        plt.legend(fontsize='large')
+        plt.grid(True, linewidth=0.01, linestyle='-', color='#ead1dc')
         plt.show()
 
     def filter_data(self,*args):
@@ -193,6 +201,7 @@ class TestTraffic:
         nox = []
         halting_vehicles = []
 
+
         for lane in self.env.network.instance.lanes:
             waiting_time.append(traci.lane.getWaitingTime(lane))
             speed.append(traci.lane.getLastStepMeanSpeed(lane))
@@ -200,13 +209,15 @@ class TestTraffic:
             nox.append(traci.lane.getNOxEmission(lane))
             halting_vehicles.append(traci.lane.getLastStepHaltingNumber(lane))
 
+
         avg_waiting_time = np.mean(waiting_time)
         avg_speed = np.mean(speed)
         avg_co2 = np.mean(co2)
         avg_nox = np.mean(nox)
         avg_halting_vehicles = np.mean(halting_vehicles)
+        arrived_vehicles = traci.simulation.getArrivedNumber()
 
-        return [avg_waiting_time, avg_speed, avg_co2, avg_nox, avg_halting_vehicles]
+        return [avg_waiting_time, avg_speed, avg_co2, avg_nox, avg_halting_vehicles, arrived_vehicles]
 
 if __name__ == '__main__':
     test = TestTraffic()

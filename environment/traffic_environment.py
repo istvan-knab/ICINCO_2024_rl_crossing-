@@ -20,6 +20,7 @@ class TrafficEnvironment(gym.Env):
         self.simulation_step = 0
         self.signals = self.network.instance.traffic_light
         self.signal = self.signals[0]
+        self.arrived = 0
 
     def active_lanes(self, signal):
         counter = 0
@@ -118,6 +119,7 @@ class TrafficEnvironment(gym.Env):
         nox = []
         halting_vehicles = []
 
+
         for lane in self.network.instance.lanes:
             waiting_time.append(traci.lane.getWaitingTime(lane))
             speed.append(traci.lane.getLastStepMeanSpeed(lane))
@@ -130,5 +132,6 @@ class TrafficEnvironment(gym.Env):
         avg_co2 = np.mean(co2)
         avg_nox = np.mean(nox)
         avg_halting_vehicles = np.mean(halting_vehicles)
+        arrived_vehicles = traci.simulation.getArrivedNumber()
 
-        return [avg_waiting_time, avg_speed, avg_co2, avg_nox, avg_halting_vehicles]
+        return [avg_waiting_time, avg_speed, avg_co2, avg_nox, avg_halting_vehicles, arrived_vehicles]
