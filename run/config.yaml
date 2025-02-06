@@ -4,7 +4,7 @@ EPISODES : 3000
 
 # Environment
 environment : "TrafficEnv"
-RENDER_MODE : "sumo-gui"
+RENDER_MODE : "sumo"
 
 # Run
 DEVICE : cpu
