@@ -33,7 +33,7 @@ if __name__ == '__main__':
     io = IO()
     agent = determine_agent(config)
     network = agent.train(config)
-    io.save_model(network, config, agent.env.config['NUMBER_OF_INTERSECTIONS'])
+    io.save_model(network, config, agent.env.config['NUMBER_OF_INTERSECTIONS'], agent.logger.id)
     print("Training Done.........")
 
 

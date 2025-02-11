@@ -36,7 +36,7 @@ class Logger(object):
                   "discount factor": self.config["GAMMA"],
                   "optimizer": "Adam"}
         self.run["parameters"] = params
-
+        self.id = self.run["sys/id"].fetch()
 
     def step(self,*args) -> None:
         """

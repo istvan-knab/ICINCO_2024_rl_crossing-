@@ -1,6 +1,6 @@
 # Agent
 algorithm : "DQN"
-EPISODES : 3000
+EPISODES : 1500
 
 # Environment
 environment : "TrafficEnv"
@@ -12,13 +12,13 @@ SEED : 0
 mode : "train"
 
 #Hyperparameters
-ALPHA : 0.001
+ALPHA : 0.0015
 GAMMA : 0.99
 EPSILON : 1.0
-EPSILON_DECAY : 0.9975
-EPSILON_THRESHOLD: 0.1
+EPSILON_DECAY : 0.9985
+EPSILON_THRESHOLD: 0.01
 
 #Save
-PATH : "../algorithms/neural_networks/models"
+PATH : "../results/heatmap"
 #Load
 PATH_TEST : "/home/sztaki/Documents/ICINCO_2024_rl_crossing-/algorithms/neural_networks/models/TrafficEnv_DQN_1712230824.5037785_4.pth"
