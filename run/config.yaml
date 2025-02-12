@@ -1,21 +1,21 @@
 # Agent
 algorithm : "DQN"
-EPISODES : 3000
+EPISODES : 1500
 
 # Environment
 environment : "TrafficEnv"
-RENDER_MODE : "sumo-gui"
+RENDER_MODE : "sumo"
 
 # Run
-DEVICE : cpu
+DEVICE : cuda
 SEED : 0
 mode : "train"
 
 #Hyperparameters
-ALPHA : 0.001
-GAMMA : 0.99
+ALPHA : 0.0008
+GAMMA : 0.987
 EPSILON : 1.0
-EPSILON_DECAY : 0.9975
+EPSILON_DECAY : 0.9985
 EPSILON_THRESHOLD: 0.1
 
 #Save
