@@ -3,4 +3,4 @@ NUMBER_OF_INTERSECTIONS : 1
 STEPS : 10
 WARMUP_STEPS : 1000
 max_step : 3600
-mode : "test"
+mode : "train"
