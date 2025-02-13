@@ -221,5 +221,7 @@ class TestTraffic:
         return [avg_waiting_time, avg_speed, avg_co2, avg_nox, avg_halting_vehicles, arrived_vehicles]
 
 if __name__ == '__main__':
+    print("this is a forked repo")
+    a = 3
     test = TestTraffic()
     test.run()
