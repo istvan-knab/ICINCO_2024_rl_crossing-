@@ -28,8 +28,8 @@ class Logger(object):
         print("-------------------------------------------------------------")
         self.config = config
         self.run = neptune.init_run(
-        project="KovariProductions/trafficSignal",
-        api_token="eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLm5lcHR1bmUuYWkiLCJhcGlfdXJsIjoiaHR0cHM6Ly9hcHAubmVwdHVuZS5haSIsImFwaV9rZXkiOiI5ZGUzMWI0ZC01ZDIyLTQwNWQtODQzOS1mNzQ5NTA3YzdmOGUifQ==",
+            project="novakmarton/traffic-sumo",
+            api_token="eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLm5lcHR1bmUuYWkiLCJhcGlfdXJsIjoiaHR0cHM6Ly9hcHAubmVwdHVuZS5haSIsImFwaV9rZXkiOiJjODMyNzMyZi1iMjVmLTQyYjUtOTQ2OC0xZDJhZmNkM2UxNTAifQ==",
         )  # your credentials
 
         params = {"learning_rate": self.config["ALPHA"],
