@@ -4,7 +4,7 @@ EPISODES : 500
 
 # Environment
 environment : "TrafficEnv"
-RENDER_MODE : "sumo-gui"
+RENDER_MODE : "sumo"
 
 # Run
 DEVICE : cpu
@@ -15,7 +15,7 @@ mode : "train"
 ALPHA : 0.001
 GAMMA : 0.99
 EPSILON : 1.0
-EPSILON_DECAY : 0.975
+EPSILON_DECAY : 0.995405
 EPSILON_THRESHOLD: 0.1
 
 #Save
