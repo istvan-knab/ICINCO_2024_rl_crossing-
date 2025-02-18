@@ -1,7 +1,7 @@
 import requests
 
 # Set the API URL and your API key (replace with actual API URL and key)
-API_URL = "https://huggingface.co/settings/tokens"  # Replace with your API URL
+API_URL = "https://api-inference.huggingface.co/models/meta-llama/Llama-2-8b-hf"  # Replace with your API URL
 API_KEY = "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"  # Replace with your actual API key
 
 # Define headers for authorization
