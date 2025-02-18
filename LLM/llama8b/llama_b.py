@@ -1,2 +1,12 @@
-git clone https://<nma51>:<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>@huggingface.co/meta-llama/Meta-Llama-3-8B
-1
+import ollama
+
+response = ollama.chat(
+    model="llama3",
+    messages=[
+        {
+            "role": "user",
+            "content": "Tell me an interesting fact about elephants",
+        },
+    ],
+)
+print(response["message"]["content"])
