@@ -2,7 +2,7 @@ import transformers
 import torch
 from transformers import AutoTokenizer
 
-model = "meta-llama/Meta-Llama-3-8B-Instruct"
+model = "meta-llama/Meta-Llama-3-8B"
 tokenizer = AutoTokenizer.from_pretrained(model)
 pipeline = transformers.pipeline(
     "text-generation",
@@ -21,4 +21,3 @@ sequences = pipeline(
 )
 for seq in sequences:
     print(f"Result: {seq['generated_text']}")
-
