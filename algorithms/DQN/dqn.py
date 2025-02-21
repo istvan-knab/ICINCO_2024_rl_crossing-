@@ -55,6 +55,8 @@ class DQNAgent(object):
         :param config: it contains all the necessary rl parameters, that are not DQN specific
         :return:
         """
+
+
         for episode in range(config["EPISODES"]):
             state, info = self.env.reset()
             state = torch.tensor(state, dtype=torch.float32, device=config["DEVICE"]).unsqueeze(0)
@@ -63,6 +65,7 @@ class DQNAgent(object):
             episode_reward = 0.0
             episode_loss = 0.0
             #warmup
+            self.env.config["WARMUP_STEPS"] = np.random.randint(0, 200)
             for warmup in range(self.env.config["WARMUP_STEPS"]):
                 traci.simulationStep()
             while not done:
