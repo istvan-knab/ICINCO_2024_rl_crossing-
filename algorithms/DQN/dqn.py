@@ -125,6 +125,7 @@ class DQNAgent(object):
                     # Query LLM for reward labeling
                     llm_reward = self.query_llm_for_reward(state.tolist(), action)
                     rewards.append(llm_reward)
+                    print(rewards)
 
                 # Step environment with selected actions
                 observation, env_reward, terminated, truncated, _ = self.env.step(actions)
