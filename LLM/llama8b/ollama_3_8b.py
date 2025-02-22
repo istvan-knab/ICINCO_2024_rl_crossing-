@@ -16,7 +16,7 @@ def extract_reward(self, response_text):
 
 def query_llm_for_reward(self, state, action):
     """
-    Queries the locally running Llama 2 model via Ollama to generate a reward.
+    Queries the locally running Llama model via Ollama to generate a reward.
     """
     prompt = f"""
     You are a reinforcement learning environment. Given the following traffic state and action, return ONLY a numerical reward between -1 and 1.
@@ -28,6 +28,7 @@ def query_llm_for_reward(self, state, action):
     """
 
     try:
+        #if model LLAMA3-8B, model = llama3:8b
         response = ollama.chat(model="llama2", messages=[{"role": "user", "content": prompt}])
         reward_text = response.get("message", {}).get("content", "0.0")  # Get response
 
