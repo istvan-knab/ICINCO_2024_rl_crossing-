@@ -61,24 +61,23 @@ class DQNAgent(object):
             print(f"[ERROR] Could not extract number from: {response_text}")
             return 0.0  # Default fallback reward
 
-    def query_llm_for_reward(self, state, action):
+    def prompt_llm(self, state, action):
         """
-        Queries the locally running Llama 2 model via Ollama to generate a reward.
+        Queries the locally running Llama model via Ollama to generate a reward.
         """
         prompt = f"""
-        You are a reinforcement learning environment. Given the following traffic state and action, return ONLY a numerical reward between -1 and 1.
-
+        You are a reinforcement learning environment in a traffic simulation. Given the following traffic state and action, return ONLY a numerical reward.
         State: {state}
         Action: {action}
-
         Provide ONLY a single float number as output, without explanation, formatting, or additional text.
         """
 
         try:
             response = ollama.chat(model="llama2", messages=[{"role": "user", "content": prompt}])
-            reward_text = response.get("message", {}).get("content", "0.0")  # Get response
+            #role : system, assistant or user
+            reward_text = response.get("message", {}).get("content", "0.0")  #response
 
-            # Extract numerical reward
+            #Extract numerical reward
             reward = self.extract_reward(reward_text)
 
             print(f"\n[LLM QUERY] - State: {state}, Action: {action}")
@@ -118,19 +117,19 @@ class DQNAgent(object):
                     state = self.env.get_state(signal)
                     state = torch.tensor(state, dtype=torch.float32, device=config["DEVICE"]).unsqueeze(0)
                     states.append(state)
-
+                    # llm select action?
                     action = self.action_selection.epsilon_greedy_selection(self.model, state)
                     actions.append(action)
 
                     # Query LLM for reward labeling
-                    llm_reward = self.query_llm_for_reward(state.tolist(), action)
+                    llm_reward = self.prompt_llm(state.tolist(), action)
                     rewards.append(llm_reward)
                     print(rewards)
 
                 # Step environment with selected actions
                 observation, env_reward, terminated, truncated, _ = self.env.step(actions)
 
-                # Combine LLM-generated rewards with environment reward
+                # LLM-generated rewards, environment reward
                 total_reward = sum(rewards) / len(rewards)  # Average across signals
                 episode_reward += total_reward
                 reward_tensor = torch.tensor([[total_reward]], device=self.device)
