@@ -50,52 +50,45 @@ class DQNAgent(object):
             dqn_config = yaml.safe_load(file)
         return dqn_config
 
-    def extract_reward(self, response_text):
+    def extract_action(self, response_text):
         """
-        Extracts the first numerical reward from LLM response.
+        Extracts the first integer action from LLM response.
         """
-        match = re.search(r"[-+]?\d*\.\d+|\d+", response_text)  # Finds first float or integer
+        match = re.search(r"\d+", response_text)  # Finds first integer
         if match:
-            return float(match.group())  # Convert to float
+            return int(match.group())  # Convert to integer
         else:
-            print(f"[ERROR] Could not extract number from: {response_text}")
-            return 0.0  # Default fallback reward
+            print(f"[ERROR] Could not extract action from: {response_text}")
+            return 0  # Default fallback action
 
-    def prompt_llm(self, state, action):
+    def prompt_llm(self, state, action_space):
         """
-        Queries the locally running Llama model via Ollama to generate a reward.
+        Queries the locally running Llama model via Ollama to select an action.
         """
         prompt = f"""
-        You are a reinforcement learning environment in a traffic simulation. Given the following traffic state and action, return ONLY a numerical reward.
+        You are a reinforcement learning agent in a traffic simulation. Given the following traffic state, select the best action from the available action space.
         State: {state}
-        Action: {action}
-        Provide ONLY a single float number as output, without explanation, formatting, or additional text.
+        Action Space: {action_space}
+        Provide ONLY a single integer representing the selected action, without explanation, formatting, or additional text.
         """
 
         try:
             response = ollama.chat(model="llama2", messages=[{"role": "user", "content": prompt}])
-            #role : system, assistant or user
-            reward_text = response.get("message", {}).get("content", "0.0")  #response
+            action_text = response.get("message", {}).get("content", "0")  # response
 
-            #Extract numerical reward
-            reward = self.extract_reward(reward_text)
+            # Extract numerical action
+            action = self.extract_action(action_text)
 
-            print(f"\n[LLM QUERY] - State: {state}, Action: {action}")
-            print(f"[LLM RESPONSE] - Extracted Reward: {reward}\n")
+            print(f"\n[LLM QUERY] - State: {state}, Action Space: {action_space}")
+            print(f"[LLM RESPONSE] - Selected Action: {action}\n")
 
-            return reward
+            return action
 
         except Exception as e:
             print(f"[ERROR] LLM query failed: {e}")
-            return 0.0  # Fallback reward
-
+            return 0  # Fallback action
 
     def train(self, config: dict) -> None:
-        """
-        Training loop using the LLM for reward computation.
-
-        :param config: Dictionary containing RL parameters.
-        """
         for episode in range(config["EPISODES"]):
             state, info = self.env.reset()
             state = torch.tensor(state, dtype=torch.float32, device=config["DEVICE"]).unsqueeze(0)
@@ -104,42 +97,30 @@ class DQNAgent(object):
             episode_reward = 0.0
             episode_loss = 0.0
 
-            # Warmup steps
             for _ in range(self.env.config["WARMUP_STEPS"]):
                 traci.simulationStep()
 
             while not done:
                 states = []
                 actions = []
-                rewards = []
 
                 for signal in self.env.network.instance.traffic_light:
                     state = self.env.get_state(signal)
                     state = torch.tensor(state, dtype=torch.float32, device=config["DEVICE"]).unsqueeze(0)
                     states.append(state)
-                    # llm select action?
-                    action = self.action_selection.epsilon_greedy_selection(self.model, state)
+
+                    action_space = list(range(self.env.action_space.n))  # Define action space
+                    action = self.prompt_llm(state.tolist(), action_space)  # Get action from LLM
                     actions.append(action)
 
-                    # Query LLM for reward labeling
-                    llm_reward = self.prompt_llm(state.tolist(), action)
-                    rewards.append(llm_reward)
-                    print(rewards)
-
-                # Step environment with selected actions
                 observation, env_reward, terminated, truncated, _ = self.env.step(actions)
-
-                # LLM-generated rewards, environment reward
-                total_reward = sum(rewards) / len(rewards)  # Average across signals
-                episode_reward += total_reward
-                reward_tensor = torch.tensor([[total_reward]], device=self.device)
                 done = torch.tensor([int(terminated or truncated)], device=self.device)
 
-                # Store transitions in replay memory
                 for signal in range(len(self.env.network.instance.traffic_light)):
                     next_state = torch.tensor(observation[signal], dtype=torch.float32, device=self.device).unsqueeze(0)
                     action_tensor = torch.tensor([[actions[signal]]], dtype=torch.long, device=self.device)
-                    self.memory.push(states[signal], action_tensor, next_state, reward_tensor, done)
+                    self.memory.push(states[signal], action_tensor, next_state,
+                    torch.tensor([[0.0]], device=self.device), done)
 
                 if done:
                     break
@@ -149,7 +130,6 @@ class DQNAgent(object):
 
             self.logger.step(episode, episode_reward, self.config, episode_loss)
 
-            # Update target network periodically
             if episode % self.dqn_config["TAU"] == 0:
                 self.target.load_state_dict(OrderedDict(self.model.state_dict()))
                 self.target = self.model
