@@ -1,6 +1,6 @@
 # Agent
 algorithm : "DQN"
-EPISODES : 500
+EPISODES : 1000
 
 # Environment
 environment : "TrafficEnv"
@@ -12,10 +12,10 @@ SEED : 0
 mode : "train"
 
 #Hyperparameters
-ALPHA : 0.001
+ALPHA : 0.0001
 GAMMA : 0.99
 EPSILON : 1.0
-EPSILON_DECAY : 0.995405
+EPSILON_DECAY : 0.995415
 EPSILON_THRESHOLD: 0.1
 
 #Save
