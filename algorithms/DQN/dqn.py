@@ -20,7 +20,7 @@ class DQNAgent(object):
 
     def __init__(self, config: dict) -> None:
         """
-        Initializes the DQNAgent with necessary components.
+        Initializes the DQNAgent with necessary components. DQNAGENT
         """
         self.config = config
         self.dqn_config = self.parameters()
