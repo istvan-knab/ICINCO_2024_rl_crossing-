@@ -97,7 +97,7 @@ class DQNAgent(object):
             episode_reward = 0.0
             episode_loss = 0.0
 
-            for _ in range(self.env.config["WARMUP_STEPS"]):
+            for warmup in range(self.env.config["WARMUP_STEPS"]):
                 traci.simulationStep()
 
             while not done:
