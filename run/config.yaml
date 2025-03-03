@@ -1,6 +1,6 @@
 # Agent
 algorithm : "DQN"
-EPISODES : 2500
+EPISODES : 2000
 
 # Environment
 environment : "TrafficEnv"
@@ -9,16 +9,16 @@ RENDER_MODE : "sumo"
 # Run
 DEVICE : cuda
 SEED : 0
-mode : "train"
+mode : "test"
 
 #Hyperparameters
-ALPHA : 0.0002
+ALPHA : 0.00012
 GAMMA : 0.99
 EPSILON : 1.0
-EPSILON_DECAY : 0.9991
+EPSILON_DECAY : 0.999
 EPSILON_THRESHOLD: 0.05
 
 #Save
 PATH : "../algorithms/neural_networks/models"
 #Load
-PATH_TEST : "/home/sztaki/Documents/ICINCO_2024_rl_crossing-/algorithms/neural_networks/models/TrafficEnv_DQN_1740508672.5055716_4.pth"
+PATH_TEST : "/home/sztaki/Documents/ICINCO_2024_rl_crossing-/algorithms/neural_networks/models/TrafficEnv_DQN_1740681227.8100357_4.pth"
