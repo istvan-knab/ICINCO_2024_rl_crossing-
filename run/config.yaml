@@ -12,7 +12,7 @@ SEED : 0
 mode : "train"
 
 #Hyperparameters
-ALPHA : 0.0001
+ALPHA : 0.00025
 GAMMA : 0.99
 EPSILON : 1.0
 EPSILON_DECAY : 0.995415
@@ -21,4 +21,4 @@ EPSILON_THRESHOLD: 0.1
 #Save
 PATH : "../algorithms/neural_networks/models/nm"
 #Load
-PATH_TEST : "../algorithms/neural_networks/models/nm/"
+PATH_TEST : "../algorithms/neural_networks/models/nm/TrafficEnv_DQN_1711379816.1281295_1.pth"
