@@ -73,7 +73,7 @@ class DQNAgent(object):
         """
 
         try:
-            response = ollama.chat(model="llama2", messages=[{"role": "user", "content": prompt}])
+            response = ollama.chat(model="llama3:8b", messages=[{"role": "user", "content": prompt}])
             action_text = response.get("message", {}).get("content", "0")  # response
 
             # Extract numerical action
@@ -114,6 +114,8 @@ class DQNAgent(object):
                     actions.append(action)
 
                 observation, env_reward, terminated, truncated, _ = self.env.step(actions)
+                episode_reward += reward
+                reward = torch.tensor([[reward]], device=self.device)
                 done = torch.tensor([int(terminated or truncated)], device=self.device)
 
                 for signal in range(len(self.env.network.instance.traffic_light)):
