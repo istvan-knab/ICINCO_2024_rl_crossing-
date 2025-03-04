@@ -87,7 +87,8 @@ class DQNAgent(object):
         Follow these reasoning steps to determine the best action:
         {chain_of_thought_steps}
 
-        {prompt_template["output_format"]["description"]}
+        **Output format:**{prompt_template["output_format"]["description"]}
+        Return the action strictly as an integer from the allowed action space: {action_space}.
         """
         try:
             response = ollama.chat(model=prompt_template["model"], messages=[{"role": "user", "content": prompt}])
