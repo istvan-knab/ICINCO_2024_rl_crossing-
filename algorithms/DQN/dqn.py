@@ -57,17 +57,14 @@ class DQNAgent(object):
             return yaml.safe_load(file)
 
     def extract_action(self, response_text, action_space):
-        """
-        Extracts the first integer action from LLM response.
-        """
-        match = re.search(r"\d+", response_text)  # Finds first integer
+        match = re.search(r"\d+", response_text)
         if match:
-            action = int(match.group())  # Convert to integer
+            action = int(match.group())
             if action in action_space:
                 return action
-            if action is None:
-                print("[ERROR] LLM returned None. Defaulting action to 0.")
-                action = 0  # Set a default safe action
+        print(f"[ERROR] Invalid action extracted: {response_text}, defaulting to 0")
+        return 0  # Default action
+
     def prompt_llm(self, state, action_space):
         """
         Queries the locally running Llama model via Ollama to select the best action.
