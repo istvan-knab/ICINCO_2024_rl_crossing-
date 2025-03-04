@@ -115,7 +115,8 @@ class DQNAgent(object):
                     state = self.env.get_state(signal)
                     state = torch.tensor(state, dtype=torch.float32, device=config["DEVICE"]).unsqueeze(0)
                     states.append(state)
-                    action_space = torch.arange(self.env.action_space.n)
+                    #itt a hiba
+                    action_space = torch.tensor(self.env.action_space.n)
                     action = self.prompt_llm(state.tolist(), action_space.tolist())
                     actions.append(action)
                 observation, reward, terminated, truncated, _ = self.env.step(actions)
