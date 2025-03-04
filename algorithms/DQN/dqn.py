@@ -57,13 +57,13 @@ class DQNAgent(object):
             return yaml.safe_load(file)
 
     def extract_action(self, response_text, action_space):
-        match = re.search(r"\d+", response_text)
+        match = re.search(r"\d+", response_text)  # Finds first integer
         if match:
-            action = int(match.group())
-            if action in action_space:
+            action = int(match.group())  # Convert to integer
+            if action in action_space:  # Ensure it's within the valid range
                 return action
-        print(f"[ERROR] Invalid action extracted: {response_text}, defaulting to 0")
-        return 0  # Default action
+        print(f"[ERROR] Could not extract a valid action from: {response_text}")
+        return action_space[0]  # Default to the first action in action_space
 
     def prompt_llm(self, state, action_space):
         """
@@ -79,14 +79,13 @@ class DQNAgent(object):
         {prompt_template["content"]}
 
         State: {state}
-        Available Actions: {action_space}
-        
+        Available Actions: {action_space}       
         
         Follow these reasoning steps to determine the best action:
         {chain_of_thought_steps}
 
         **Output format:**{prompt_template["output_format"]["description"]}
-        Return the action strictly as an integer from the allowed action space: {action_space}.
+        Return ONLY the action strictly as an integer from the allowed action space: {action_space}.
         """
         try:
             response = ollama.chat(model=prompt_template["model"], messages=[{"role":prompt_template["role"], "content": prompt}])
@@ -115,18 +114,19 @@ class DQNAgent(object):
                     state = self.env.get_state(signal)
                     state = torch.tensor(state, dtype=torch.float32, device=config["DEVICE"]).unsqueeze(0)
                     states.append(state)
-                    #itt a hiba
-                    action_space = torch.tensor(self.env.action_space.n)
+                    action_space = torch.arange(self.env.action_space.n)
                     action = self.prompt_llm(state.tolist(), action_space.tolist())
                     actions.append(action)
                 observation, reward, terminated, truncated, _ = self.env.step(actions)
                 episode_reward += reward
                 reward = torch.tensor([[reward]], device=self.device)
                 done = torch.tensor([int(terminated or truncated)], device=self.device)
+
                 for signal in range(len(self.env.network.instance.traffic_light)):
                     next_state = torch.tensor(observation[signal], dtype=torch.float32, device=self.device).unsqueeze(0)
                     action_tensor = torch.tensor([[actions[signal]]], dtype=torch.long, device=self.device)
-                    self.memory.push(states[signal], action_tensor, next_state, torch.tensor([[0.0]], device=self.device), done)
+                    self.memory.push(states[signal], action_tensor, next_state,
+                                     torch.tensor([[0.0]], device=self.device), done)
                 if done:
                     break
                 loss = self.fit_model()
