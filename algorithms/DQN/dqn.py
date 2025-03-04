@@ -56,13 +56,15 @@ class DQNAgent(object):
         with open('../algorithms/DQN/prompt.yaml', 'r') as file:
             return yaml.safe_load(file)
 
-    def extract_action(self, response_text):
+    def extract_action(self, response_text, action_space):
         """
         Extracts the first integer action from LLM response.
         """
         match = re.search(r"\d+", response_text)  # Finds first integer
         if match:
-            return int(match.group())  # Convert to integer
+            action = int(match.group())  # Convert to integer
+            if action in action_space:
+                return action
         else:
             print(f"[ERROR] Could not extract action from: {response_text}")
             return 0  # Default fallback action
@@ -92,7 +94,7 @@ class DQNAgent(object):
         try:
             response = ollama.chat(model=prompt_template["model"], messages=[{"role":prompt_template["role"], "content": prompt}])
             action_text = response.get("message", {}).get("content", "0")
-            action = self.extract_action(action_text)
+            action = self.extract_action(action_text, action_space)
             print(f"\n[LLM QUERY] - State: {state}, Action Space: {action_space}")
             print(f"[LLM RESPONSE] - Selected Action: {action}\n")
             return action
