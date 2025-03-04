@@ -51,7 +51,7 @@ class DQNAgent(object):
 
     def load_prompt_config(self) -> dict:
         """
-        Loads the prompt configuration from a YAML file.
+        Loads the prompt parameters from a config file.
         """
         with open('prompt_config.yaml', 'r') as file:
             return yaml.safe_load(file)
@@ -118,7 +118,7 @@ class DQNAgent(object):
                     state = torch.tensor(state, dtype=torch.float32, device=config["DEVICE"]).unsqueeze(0)
                     states.append(state)
                     action_space = list(range(self.env.action_space.n))
-                    expected_rewards = self.model(state).detach().cpu().numpy().tolist()[0]
+                    expected_rewards = self.model(state).detach().to("cuda")
                     action = self.prompt_llm(state.tolist(), action_space, expected_rewards)
                     actions.append(action)
                 observation, reward, terminated, truncated, _ = self.env.step(actions)
