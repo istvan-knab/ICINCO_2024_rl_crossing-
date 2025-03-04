@@ -20,7 +20,7 @@ class DQNAgent(object):
 
     def __init__(self, config: dict) -> None:
         """
-        Initializes the DQNAgent with necessary components.
+        Initializes the DQNAgent with necessary components. DQNAGENT
         """
         self.config = config
         self.dqn_config = self.parameters()
@@ -51,41 +51,49 @@ class DQNAgent(object):
 
     def load_prompt_config(self) -> dict:
         """
-        Loads the prompt configuration from a YAML file.
+        Loads the prompt parameters from a config file.
         """
-        with open('prompt_config.yaml', 'r') as file:
+        with open('../algorithms/DQN/prompt.yaml', 'r') as file:
             return yaml.safe_load(file)
 
-    def extract_action(self, response_text):
-        """
-        Extracts the first integer action from LLM response.
-        """
+    def extract_action(self, response_text, action_space):
         match = re.search(r"\d+", response_text)  # Finds first integer
         if match:
-            return int(match.group())  # Convert to integer
-        else:
-            print(f"[ERROR] Could not extract action from: {response_text}")
-            return 0  # Default fallback action
+            action = int(match.group())  # Convert to integer
+            if action in action_space:  # Ensure it's within the valid range
+                return action
+        print(f"[ERROR] Could not extract a valid action from: {response_text}")
+        return action_space[0]  # Default to the first action in action_space
 
     def prompt_llm(self, state, action_space):
         """
         Queries the locally running Llama model via Ollama to select the best action.
         """
         prompt_template = self.prompt_config["prompt_template"]
+
+        # Construct Chain of Thought reasoning steps
+        chain_of_thought_steps = "\n".join(
+            f"{i + 1}. {step}" for i, step in enumerate(prompt_template["chain_of_thought"]))
+
         prompt = f"""
         {prompt_template["content"]}
 
         State: {state}
-        Available Actions: {action_space}
+        Available Actions: {action_space}       
 
-        {prompt_template["output_format"]["description"]}
+        Follow these reasoning steps to determine the best action:
+        {chain_of_thought_steps}
+
+        **Output format:**{prompt_template["output_format"]["description"]}
+        Return ONLY the action strictly as an integer from the allowed action space: {action_space}.
         """
         try:
-            response = ollama.chat(model=prompt_template["model"], messages=[{"role": prompt_template["role"], "content": prompt}])
+            response = ollama.chat(model=prompt_template["model"],
+                                   messages=[{"role": prompt_template["role"], "content": prompt}])
             action_text = response.get("message", {}).get("content", "0")
-            action = self.extract_action(action_text)
-            print(f"\n[LLM QUERY] - State: {state}, Action Space: {action_space}")
-            print(f"[LLM RESPONSE] - Selected Action: {action}\n")
+            action = self.extract_action(action_text, action_space)
+            # print(f"\n[LLM QUERY] - State: {state}, Action Space: {action_space}")
+            # print(f"[LLM RESPONSE] - Selected Action: {action}\n")
             return action
         except Exception as e:
             print(f"[ERROR] LLM query failed: {e}")
@@ -107,17 +115,19 @@ class DQNAgent(object):
                     state = self.env.get_state(signal)
                     state = torch.tensor(state, dtype=torch.float32, device=config["DEVICE"]).unsqueeze(0)
                     states.append(state)
-                    action_space = torch.tensor((self.env.action_space.n))
-                    action = self.prompt_llm(state.tolist(), action_space)
+                    action_space = torch.arange(self.env.action_space.n)
+                    action = self.prompt_llm(state.tolist(), action_space.tolist())
                     actions.append(action)
                 observation, reward, terminated, truncated, _ = self.env.step(actions)
                 episode_reward += reward
                 reward = torch.tensor([[reward]], device=self.device)
                 done = torch.tensor([int(terminated or truncated)], device=self.device)
+
                 for signal in range(len(self.env.network.instance.traffic_light)):
                     next_state = torch.tensor(observation[signal], dtype=torch.float32, device=self.device).unsqueeze(0)
                     action_tensor = torch.tensor([[actions[signal]]], dtype=torch.long, device=self.device)
-                    self.memory.push(states[signal], action_tensor, next_state, torch.tensor([[0.0]], device=self.device), done)
+                    self.memory.push(states[signal], action_tensor, next_state,
+                                     torch.tensor([[0.0]], device=self.device), done)
                 if done:
                     break
                 loss = self.fit_model()
@@ -127,6 +137,7 @@ class DQNAgent(object):
                 self.target.load_state_dict(OrderedDict(self.model.state_dict()))
                 self.target = self.model
         return self.model
+
     def fit_model(self) -> None:
         """
         Computes gradients based on sampled batches.
