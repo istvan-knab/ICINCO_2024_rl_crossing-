@@ -65,10 +65,9 @@ class DQNAgent(object):
             action = int(match.group())  # Convert to integer
             if action in action_space:
                 return action
-        else:
-            print(f"[ERROR] Could not extract action from: {response_text}")
-            return 0  # Default fallback action
-
+            if action is None:
+                print("[ERROR] LLM returned None. Defaulting action to 0.")
+                action = 0  # Set a default safe action
     def prompt_llm(self, state, action_space):
         """
         Queries the locally running Llama model via Ollama to select the best action.
@@ -95,8 +94,8 @@ class DQNAgent(object):
             response = ollama.chat(model=prompt_template["model"], messages=[{"role":prompt_template["role"], "content": prompt}])
             action_text = response.get("message", {}).get("content", "0")
             action = self.extract_action(action_text, action_space)
-            print(f"\n[LLM QUERY] - State: {state}, Action Space: {action_space}")
-            print(f"[LLM RESPONSE] - Selected Action: {action}\n")
+            #print(f"\n[LLM QUERY] - State: {state}, Action Space: {action_space}")
+            #print(f"[LLM RESPONSE] - Selected Action: {action}\n")
             return action
         except Exception as e:
             print(f"[ERROR] LLM query failed: {e}")
