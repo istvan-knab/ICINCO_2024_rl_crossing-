@@ -81,6 +81,7 @@ class DQNAgent(object):
         State: {state}
         Available Actions: {action_space}
         
+        
         Follow these reasoning steps to determine the best action:
         {chain_of_thought_steps}
 
