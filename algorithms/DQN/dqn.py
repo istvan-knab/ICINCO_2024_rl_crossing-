@@ -53,7 +53,7 @@ class DQNAgent(object):
         """
         Loads the prompt parameters from a config file.
         """
-        with open('prompt_config.yaml', 'r') as file:
+        with open('../algorithms/DQN/prompt.yaml', 'r') as file:
             return yaml.safe_load(file)
 
     def extract_action(self, response_text):
@@ -67,7 +67,7 @@ class DQNAgent(object):
             print(f"[ERROR] Could not extract action from: {response_text}")
             return 0  # Default fallback action
 
-    def prompt_llm(self, state, action_space, expected_rewards):
+    def prompt_llm(self, state, action_space):
         """
         Queries the locally running Llama model via Ollama to select the best action.
         """
@@ -82,7 +82,6 @@ class DQNAgent(object):
 
         State: {state}
         Available Actions: {action_space}
-        Expected Rewards: {expected_rewards}
         
         Follow these reasoning steps to determine the best action:
         {chain_of_thought_steps}
@@ -91,15 +90,14 @@ class DQNAgent(object):
         Return the action strictly as an integer from the allowed action space: {action_space}.
         """
         try:
-            response = ollama.chat(model=prompt_template["model"], messages=[{"role": "user", "content": prompt}])
+            response = ollama.chat(model=prompt_template["model"], messages=[{"role":prompt_template["role"], "content": prompt}])
             action_text = response.get("message", {}).get("content", "0")
             action = self.extract_action(action_text)
-            print(f"\n[LLM QUERY] - State: {state}, Action Space: {action_space}, Expected Rewards: {expected_rewards}")
+            print(f"\n[LLM QUERY] - State: {state}, Action Space: {action_space}")
             print(f"[LLM RESPONSE] - Selected Action: {action}\n")
             return action
         except Exception as e:
             print(f"[ERROR] LLM query failed: {e}")
-            return np.argmax(expected_rewards)  # Default to best expected reward if LLM fails
 
     def train(self, config: dict) -> None:
         for episode in range(config["EPISODES"]):
@@ -118,9 +116,8 @@ class DQNAgent(object):
                     state = self.env.get_state(signal)
                     state = torch.tensor(state, dtype=torch.float32, device=config["DEVICE"]).unsqueeze(0)
                     states.append(state)
-                    action_space = list(range(self.env.action_space.n))
-                    expected_rewards = self.model(state).detach().to("cuda")
-                    action = self.prompt_llm(state.tolist(), action_space, expected_rewards)
+                    action_space = torch.arange(self.env.action_space.n)
+                    action = self.prompt_llm(state.tolist(), action_space.tolist())
                     actions.append(action)
                 observation, reward, terminated, truncated, _ = self.env.step(actions)
                 episode_reward += reward
@@ -139,3 +136,41 @@ class DQNAgent(object):
                 self.target.load_state_dict(OrderedDict(self.model.state_dict()))
                 self.target = self.model
         return self.model
+
+    def fit_model(self) -> None:
+        """
+        Computes gradients based on sampled batches.
+
+        :return: None
+        """
+        if len(self.memory) < self.dqn_config["BATCH_SIZE"]:
+            return 0
+        sample = self.memory.sample()
+        batch = self.Transition(*zip(*sample))
+
+        state_batch = torch.cat(batch.state)
+        action_batch = torch.cat(batch.action)
+        reward_batch = torch.cat(batch.reward)
+        next_state_batch = torch.cat(batch.next_state)
+        done_batch = torch.cat(batch.done)
+
+        with torch.no_grad():
+            output_next_state_batch = self.target(next_state_batch).detach()
+            output_next_state_batch = torch.max(output_next_state_batch, 1)[0].detach()
+            output_next_state_batch = torch.reshape(output_next_state_batch,
+                                                    (self.dqn_config["BATCH_SIZE"], -1)).detach()
+
+        y_batch = (reward_batch + self.config['GAMMA'] * output_next_state_batch * (1 - done_batch).view(-1, 1)).float()
+        output = torch.reshape(self.model(state_batch), (self.dqn_config["BATCH_SIZE"], -1))
+        q_values = torch.gather(output, 1, action_batch)
+
+        loss = self.criterion(q_values, y_batch)
+        self.loss = float(loss)
+
+        self.optimizer.zero_grad()
+        loss.backward()
+        for param in self.model.parameters():
+            param.grad.data.clamp_(-1, 1)
+        self.optimizer.step()
+
+        return loss
