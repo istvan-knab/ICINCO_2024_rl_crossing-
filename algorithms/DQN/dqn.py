@@ -24,6 +24,7 @@ class DQNAgent(object):
         """
         self.config = config
         self.dqn_config = self.parameters()
+        self.prompt_config = self.load_prompt_config()
         self.env = TrafficEnvironment()
         config["state_size"] = self.env.observation_space.shape[0]
         config["action_size"] = self.env.action_space.n
@@ -48,6 +49,13 @@ class DQNAgent(object):
             dqn_config = yaml.safe_load(file)
         return dqn_config
 
+    def load_prompt_config(self) -> dict:
+        """
+        Loads the prompt configuration from a YAML file.
+        """
+        with open('../algorithms/DQN/prompt.yaml', 'r') as file:
+            return yaml.safe_load(file)
+
     def extract_action(self, response_text):
         """
         Extracts the first integer action from LLM response.
@@ -61,25 +69,40 @@ class DQNAgent(object):
 
     def prompt_llm(self, state, action_space, expected_rewards):
         """
-        Queries the locally running Llama model via Ollama to select the best action.
+        Queries the locally running Llama model via Ollama to select the best action,
+        ensuring compliance with the output format and valid action range.
         """
+        prompt_template = self.prompt_config["prompt_template"]
+
+        # Construct Chain of Thought reasoning steps
+        chain_of_thought_steps = "\n".join(
+            f"{i + 1}. {step}" for i, step in enumerate(prompt_template["chain_of_thought"]))
+
         prompt = f"""
-        You are a reinforcement learning agent in a traffic simulation. Given the following state and the expected rewards for each action, select the best action that maximizes the reward.
+        {prompt_template["content"]}
 
-        State: {state}
-        Available Actions: {action_space}
-        Expected Rewards: {expected_rewards}
+        **State:** {state}
+        **Available Actions:** {action_space}
+        **Expected Rewards:** {expected_rewards}
 
-        Choose the action (as a single integer) that has the highest expected reward. 
-        Provide ONLY the action number, without explanation, formatting, or additional text.
+        Follow these reasoning steps to determine the best action:
+        {chain_of_thought_steps}
+
+        **Output Format:** {prompt_template["output_format"]["description"]}
+        Return the action strictly as an integer from the allowed action space: {action_space}.
         """
 
         try:
-            response = ollama.chat(model="llama3:8b", messages=[{"role": "user", "content": prompt}])
+            response = ollama.chat(model=prompt_template["model"], messages=[{"role": "user", "content": prompt}])
             action_text = response.get("message", {}).get("content", "0")  # response
 
             # Extract numerical action
             action = self.extract_action(action_text)
+
+            # Ensure action is within valid range
+            if action not in action_space:
+                print(f"[WARNING] LLM selected invalid action: {action}. Using closest valid action.")
+                action = min(max(action, min(action_space)), max(action_space))
 
             print(f"\n[LLM QUERY] - State: {state}, Action Space: {action_space}, Expected Rewards: {expected_rewards}")
             print(f"[LLM RESPONSE] - Selected Action: {action}\n")
@@ -87,7 +110,7 @@ class DQNAgent(object):
             return action
 
         except Exception as e:
-            print(f"[ERROR] LLM query failed: {e}")
+            print(f"[ERROR] LLM query failed or returned invalid format: {e}")
             return np.argmax(expected_rewards)  # Default to best expected reward if LLM fails
 
     def train(self, config: dict) -> None:
@@ -98,48 +121,36 @@ class DQNAgent(object):
             self.action_selection.epsilon_update()
             episode_reward = 0.0
             episode_loss = 0.0
-
             for warmup in range(self.env.config["WARMUP_STEPS"]):
                 traci.simulationStep()
-
             while not done:
                 states = []
                 actions = []
-
                 for signal in self.env.network.instance.traffic_light:
                     state = self.env.get_state(signal)
                     state = torch.tensor(state, dtype=torch.float32, device=config["DEVICE"]).unsqueeze(0)
                     states.append(state)
-
-                    action_space = list(range(self.env.action_space.n))  # Define action space
-                    expected_rewards = self.model(state).detach().cpu().numpy().tolist()[0]  # Get Q-values
-
-                    action = self.prompt_llm(state.tolist(), action_space, expected_rewards)  # Query LLM
+                    action_space = list(range(self.env.action_space.n))
+                    expected_rewards = self.model(state).detach().cpu().numpy().tolist()[0]
+                    action = self.prompt_llm(state.tolist(), action_space, expected_rewards)
                     actions.append(action)
-
                 observation, reward, terminated, truncated, _ = self.env.step(actions)
                 episode_reward += reward
                 reward = torch.tensor([[reward]], device=self.device)
                 done = torch.tensor([int(terminated or truncated)], device=self.device)
-
                 for signal in range(len(self.env.network.instance.traffic_light)):
                     next_state = torch.tensor(observation[signal], dtype=torch.float32, device=self.device).unsqueeze(0)
                     action_tensor = torch.tensor([[actions[signal]]], dtype=torch.long, device=self.device)
                     self.memory.push(states[signal], action_tensor, next_state,
                                      torch.tensor([[0.0]], device=self.device), done)
-
                 if done:
                     break
-
                 loss = self.fit_model()
                 episode_loss += loss
-
             self.logger.step(episode, episode_reward, self.config, episode_loss)
-
             if episode % self.dqn_config["TAU"] == 0:
                 self.target.load_state_dict(OrderedDict(self.model.state_dict()))
                 self.target = self.model
-
         return self.model
 
     def fit_model(self) -> None:
