@@ -1,5 +1,5 @@
 prompt_template:
-  model: "tinyllama"  #Used model
+  model: "llama2"  #Used model
   role: "user" #LLM role
   content: |
     You are an agent operating in a reinforcement learning-based traffic simulation. 

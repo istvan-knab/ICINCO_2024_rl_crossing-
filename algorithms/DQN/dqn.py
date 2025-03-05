@@ -11,7 +11,7 @@ import re
 from algorithms.DQN.epsilon_greedy import EpsilonGreedy
 from algorithms.DQN.replay_memory import ReplayMemory
 from algorithms.neural_networks.mlp import NN
-from algorithms.logger import Logger
+#from algorithms.logger import Logger
 from algorithms.io import IO
 from environment.traffic_environment import TrafficEnvironment
 
@@ -38,7 +38,7 @@ class DQNAgent(object):
         self.optimizer = optim.Adam(self.model.parameters(), lr=config["ALPHA"], amsgrad=False)
         self.Transition = namedtuple('Transition', ('state', 'action', 'next_state', 'reward', 'done'))
         self.io = IO()
-        self.logger = Logger(config)
+        #self.logger = Logger(config)
         self.loss = 0
 
     def parameters(self) -> dict:
@@ -98,7 +98,7 @@ class DQNAgent(object):
             action = self.extract_action(action_text)
 
             if action not in action_space:
-                print(f"[WARNING] LLM selected invalid action: {action}.")
+                #print(f"[WARNING] LLM selected invalid action: {action}.")
                 action = min(max(action, min(action_space)), max(action_space))
 
             #print(f"\n[LLM QUERY] - State: {state}, Action Space: {action_space}, Expected Rewards: {expected_rewards}")
@@ -135,6 +135,7 @@ class DQNAgent(object):
                 episode_reward += reward
                 reward = torch.tensor([[reward]], device=self.device)
                 done = torch.tensor([int(terminated or truncated)], device=self.device)
+
                 for signal in range(len(self.env.network.instance.traffic_light)):
                     next_state = torch.tensor(observation[signal], dtype=torch.float32, device=self.device).unsqueeze(0)
                     action_tensor = torch.tensor([[actions[signal]]], dtype=torch.long, device=self.device)
@@ -149,7 +150,10 @@ class DQNAgent(object):
                 self.target.load_state_dict(OrderedDict(self.model.state_dict()))
                 self.target = self.model
         return self.model
-
+        print("================================================")
+        print(f"Episode {episode}")
+        print(f"Reward {episode_reward}")
+        print("================================================")
     def fit_model(self) -> None:
         """
         Computes gradients based on sampled batches.
