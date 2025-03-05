@@ -67,7 +67,7 @@ class DQNAgent(object):
             print(f"[ERROR] Could not extract action from: {response_text}")
             return 0  # Default fallback action
 
-    def prompt_llm(self, state, action_space, expected_rewards):
+    def prompt_llm(self, state, action_space):
         """
         Queries the locally running Llama model via Ollama to select the best action,
         ensuring compliance with the output format and valid action range.
@@ -83,35 +83,32 @@ class DQNAgent(object):
 
         **State:** {state}
         **Available Actions:** {action_space}
-        **Expected Rewards:** {expected_rewards}
 
         Follow these reasoning steps to determine the best action:
         {chain_of_thought_steps}
 
-        **Output Format:** {prompt_template["output_format"]["description"]}
-        Return the action strictly as an integer from the allowed action space: {action_space}.
+        {prompt_template["output_format"]["description"]}
+        Return ONLY an integer from the allowed action space: {action_space}.
         """
 
         try:
-            response = ollama.chat(model=prompt_template["model"], messages=[{"role": "user", "content": prompt}])
+            response = ollama.chat(model=prompt_template["model"], messages=[{"role": prompt_template["role"], "content": prompt}])
             action_text = response.get("message", {}).get("content", "0")  # response
 
-            # Extract numerical action
             action = self.extract_action(action_text)
 
-            # Ensure action is within valid range
             if action not in action_space:
-                print(f"[WARNING] LLM selected invalid action: {action}. Using closest valid action.")
+                print(f"[WARNING] LLM selected invalid action: {action}.")
                 action = min(max(action, min(action_space)), max(action_space))
 
-            print(f"\n[LLM QUERY] - State: {state}, Action Space: {action_space}, Expected Rewards: {expected_rewards}")
-            print(f"[LLM RESPONSE] - Selected Action: {action}\n")
+            #print(f"\n[LLM QUERY] - State: {state}, Action Space: {action_space}, Expected Rewards: {expected_rewards}")
+            #print(f"[LLM RESPONSE] - Selected Action: {action}\n")
 
             return action
 
         except Exception as e:
             print(f"[ERROR] LLM query failed or returned invalid format: {e}")
-            return np.argmax(expected_rewards)  # Default to best expected reward if LLM fails
+
 
     def train(self, config: dict) -> None:
         for episode in range(config["EPISODES"]):
@@ -130,9 +127,9 @@ class DQNAgent(object):
                     state = self.env.get_state(signal)
                     state = torch.tensor(state, dtype=torch.float32, device=config["DEVICE"]).unsqueeze(0)
                     states.append(state)
+                    #nem list!
                     action_space = list(range(self.env.action_space.n))
-                    expected_rewards = self.model(state).detach().cpu().numpy().tolist()[0]
-                    action = self.prompt_llm(state.tolist(), action_space, expected_rewards)
+                    action = self.prompt_llm(state.tolist(), action_space)
                     actions.append(action)
                 observation, reward, terminated, truncated, _ = self.env.step(actions)
                 episode_reward += reward
