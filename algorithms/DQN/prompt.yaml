@@ -1,15 +1,18 @@
 prompt_template:
-  model: "llama2"  #Used model
-  role: "system" #LLM role
+  model: "tinyllama"  #Used model
+  role: "user" #LLM role
   content: |
-    You are an AI agent operating in a reinforcement learning-based traffic simulation. Your task is to select the best action that maximizes the cumulative reward while ensuring smooth traffic flow and minimal congestion. You will be given a traffic state and a set of available actions. Your goal is to choose the optimal action based on this information.
+    You are an agent operating in a reinforcement learning-based traffic simulation. 
+    Your goal is to select the best action that maximizes the cumulative reward while ensuring smooth traffic flow and minimal congestion. 
+    You will be given a traffic state and the action space containing the available actions. 
+    Your task is to select the best action based on this information.
 
   chain_of_thought:
     - step: "Analyze the current state of the traffic."
     - step: "Review the available actions and their corresponding rewards."
     - step: "Identify the action that provides the maximum reward."
-    - step: "Return the action as an integer value."
+    - step: "Return the selected action as an integer value."
 
   output_format:
     type: "integer"
-    description: "The index of the action that provides the highest reward. Return only the integer value with no additional text."
+    description: "The index of the action that provides the highest reward. Return ONLY the integer value with no additional text."

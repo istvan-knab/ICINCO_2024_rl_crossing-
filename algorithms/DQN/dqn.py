@@ -53,7 +53,7 @@ class DQNAgent(object):
         """
         Loads the prompt configuration from a YAML file.
         """
-        with open('prompt_config.yaml', 'r') as file:
+        with open('../algorithms/DQN/prompt.yaml', 'r') as file:
             return yaml.safe_load(file)
 
     def extract_action(self, response_text):
