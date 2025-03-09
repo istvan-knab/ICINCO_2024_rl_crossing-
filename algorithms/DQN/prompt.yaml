@@ -9,6 +9,7 @@ prompt_template:
 
   chain_of_thought:
     - step: "Analyze the current state of the traffic."
+    - step: "Analyze the previous rewards."
     - step: "Review the available actions and their corresponding rewards."
     - step: "Identify the action that provides the maximum reward."
     - step: "Return the selected action as an integer value."

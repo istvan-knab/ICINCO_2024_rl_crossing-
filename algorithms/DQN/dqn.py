@@ -11,7 +11,7 @@ import re
 from algorithms.DQN.epsilon_greedy import EpsilonGreedy
 from algorithms.DQN.replay_memory import ReplayMemory
 from algorithms.neural_networks.mlp import NN
-#from algorithms.logger import Logger
+from algorithms.logger import Logger
 from algorithms.io import IO
 from environment.traffic_environment import TrafficEnvironment
 
@@ -35,10 +35,10 @@ class DQNAgent(object):
         self.model = NN(config).to(self.device)
         self.target = NN(config).to(self.device)
         self.target.load_state_dict(self.model.state_dict())
-        self.optimizer = optim.Adam(self.model.parameters(), lr=config["ALPHA"], amsgrad=False)
+        self.optimizer = optim.AdamW(self.model.parameters(), lr=config["ALPHA"], amsgrad=False)
         self.Transition = namedtuple('Transition', ('state', 'action', 'next_state', 'reward', 'done'))
         self.io = IO()
-        #self.logger = Logger(config)
+        self.logger = Logger(config)
         self.loss = 0
 
     def parameters(self) -> dict:
@@ -67,7 +67,7 @@ class DQNAgent(object):
             print(f"[ERROR] Could not extract action from: {response_text}")
             return 0  # Default fallback action
 
-    def prompt_llm(self, state, action_space):
+    def prompt_llm(self, state, action_space, rewards):
         """
         Queries the locally running Llama model via Ollama to select the best action,
         ensuring compliance with the output format and valid action range.
@@ -83,6 +83,7 @@ class DQNAgent(object):
 
         **State:** {state}
         **Available Actions:** {action_space}
+        **Previous Reward:** {rewards}
 
         Follow these reasoning steps to determine the best action:
         {chain_of_thought_steps}
@@ -101,7 +102,7 @@ class DQNAgent(object):
                 #print(f"[WARNING] LLM selected invalid action: {action}.")
                 action = min(max(action, min(action_space)), max(action_space))
 
-            #print(f"\n[LLM QUERY] - State: {state}, Action Space: {action_space}, Expected Rewards: {expected_rewards}")
+            print(f"\n[LLM QUERY] - State: {state}, Action Space: {action_space}, Reward: {rewards}")
             #print(f"[LLM RESPONSE] - Selected Action: {action}\n")
 
             return action
@@ -123,17 +124,20 @@ class DQNAgent(object):
             while not done:
                 states = []
                 actions = []
+                rewards = []
                 for signal in self.env.network.instance.traffic_light:
                     state = self.env.get_state(signal)
                     state = torch.tensor(state, dtype=torch.float32, device=config["DEVICE"]).unsqueeze(0)
                     states.append(state)
-                    #nem list!
-                    action_space = list(range(self.env.action_space.n))
-                    action = self.prompt_llm(state.tolist(), action_space)
+
+                    action_space = list(range((self.env.action_space.n)))
+                    action = self.prompt_llm(state.tolist(), action_space, rewards)
                     actions.append(action)
+
                 observation, reward, terminated, truncated, _ = self.env.step(actions)
                 episode_reward += reward
                 reward = torch.tensor([[reward]], device=self.device)
+                rewards.append(reward)
                 done = torch.tensor([int(terminated or truncated)], device=self.device)
 
                 for signal in range(len(self.env.network.instance.traffic_light)):
@@ -150,10 +154,6 @@ class DQNAgent(object):
                 self.target.load_state_dict(OrderedDict(self.model.state_dict()))
                 self.target = self.model
         return self.model
-        print("================================================")
-        print(f"Episode {episode}")
-        print(f"Reward {episode_reward}")
-        print("================================================")
     def fit_model(self) -> None:
         """
         Computes gradients based on sampled batches.
