@@ -40,6 +40,7 @@ class DQNAgent(object):
         self.io = IO()
         self.logger = Logger(config)
         self.loss = 0
+        self.latest_reward = 0.0
 
     def parameters(self) -> dict:
         """
@@ -67,7 +68,7 @@ class DQNAgent(object):
             print(f"[ERROR] Could not extract action from: {response_text}")
             return 0  # Default fallback action
 
-    def prompt_llm(self, state, action_space, rewards):
+    def prompt_llm(self, state, action_space):
         """
         Queries the locally running Llama model via Ollama to select the best action,
         ensuring compliance with the output format and valid action range.
@@ -83,7 +84,7 @@ class DQNAgent(object):
 
         **State:** {state}
         **Available Actions:** {action_space}
-        **Previous Reward:** {rewards}
+        **Previous Reward:** {self.latest_reward}
 
         Follow these reasoning steps to determine the best action:
         {chain_of_thought_steps}
@@ -102,7 +103,7 @@ class DQNAgent(object):
                 #print(f"[WARNING] LLM selected invalid action: {action}.")
                 action = min(max(action, min(action_space)), max(action_space))
 
-            print(f"\n[LLM QUERY] - State: {state}, Action Space: {action_space}, Reward: {rewards}")
+            #print(f"\n[LLM QUERY] - State: {state}, Action Space: {action_space}, Reward: {self.latest_reward}")
             #print(f"[LLM RESPONSE] - Selected Action: {action}\n")
 
             return action
@@ -124,20 +125,20 @@ class DQNAgent(object):
             while not done:
                 states = []
                 actions = []
-                rewards = []
+
                 for signal in self.env.network.instance.traffic_light:
                     state = self.env.get_state(signal)
                     state = torch.tensor(state, dtype=torch.float32, device=config["DEVICE"]).unsqueeze(0)
                     states.append(state)
 
                     action_space = list(range((self.env.action_space.n)))
-                    action = self.prompt_llm(state.tolist(), action_space, rewards)
+                    action = self.prompt_llm(state.tolist(), action_space)
                     actions.append(action)
 
                 observation, reward, terminated, truncated, _ = self.env.step(actions)
                 episode_reward += reward
                 reward = torch.tensor([[reward]], device=self.device)
-                rewards.append(reward)
+
                 done = torch.tensor([int(terminated or truncated)], device=self.device)
 
                 for signal in range(len(self.env.network.instance.traffic_light)):
@@ -149,6 +150,10 @@ class DQNAgent(object):
                     break
                 loss = self.fit_model()
                 episode_loss += loss
+
+            # Store episode reward for LLM
+            self.latest_reward = episode_reward
+
             self.logger.step(episode, episode_reward, self.config, episode_loss)
             if episode % self.dqn_config["TAU"] == 0:
                 self.target.load_state_dict(OrderedDict(self.model.state_dict()))
