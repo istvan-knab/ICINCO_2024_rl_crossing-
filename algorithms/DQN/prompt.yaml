@@ -2,10 +2,29 @@ prompt_template:
   model: "llama3:8b"  #Used model
   role: "user" #LLM role
   content: |
-    You are an agent operating in a reinforcement learning-based traffic simulation. 
-    Your goal is to select the best action that maximizes the cumulative reward while ensuring smooth traffic flow and minimal congestion. 
-    You will be given a traffic state and the action space containing the available actions. 
-    Your task is to select the best action based on this information.
+    Problem description and role: You are an expert agent in an intersections. Your goal is to control the traffic light phases in a manner that maximizes the throughput
+    and minimizes the waiting time and travel time of every vehicle that uses the intersection. The current state of the intersection is defined by a vector that contain certain features about the traffic.
+    This vector looks as follows: [queue length,...,...]
+    The meaning of this features:
+    Queue length: ...
+    -
+    -
+    -
+
+
+(Demonstració ha van:)
+    There is an axpert system that controlled the environment as follows:
+    -
+    -
+    -
+
+  The actions that can control the intersection are the following:
+  -(leirni a jelentését az actionnek és legyen sorszáma (0,1,2..,n)
+  -
+
+  Pleas chose from these actions and give me your choice in json format.
+
+
 
   chain_of_thought:
     - step: "Analyze the current state of the traffic."
